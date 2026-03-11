@@ -1,0 +1,18 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  keycloak:
+    command: start --hostname=${KC_HOSTNAME:-auth.example.com} --proxy-headers=xforwarded --http-enabled=true --optimized
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+
+  db:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
