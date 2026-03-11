@@ -20,3 +20,4 @@
 | [fullstack](./examples/fullstack/) | PWA + API + PostgreSQL + Redis + 2 CF Tunnels — ตัวอย่าง multi-service |
 | [n8n](./examples/n8n/) | n8n Workflow Automation + PostgreSQL + CF Tunnel — พร้อม webhook + queue mode (prd) |
 | [wordpress](./examples/wordpress/) | WordPress + MariaDB + Redis Object Cache + CF Tunnel — พร้อม custom plugins/themes |
+| [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — รวมทั้งองค์กร 5 tunnels |
