@@ -29,5 +29,6 @@
 | [airflow](./examples/airflow/) | Apache Airflow DAG scheduling — ETL pipeline, parallel tasks + Python DAG examples |
 | [rag](./examples/rag/) | Custom RAG: Qdrant + Ollama/OpenAI + Node.js API — code-first, full source code |
 | [dify](./examples/dify/) | Dify AI Platform: low-code RAG, Agent, Workflow — ต่อ LLM ทุกเจ้าผ่าน UI |
+| [inngest](./examples/inngest/) | Inngest durable workflow ง่ายๆ — step, sleep, cron, fan-out + Node.js source code |
 | [keycloak](./examples/keycloak/) | Keycloak SSO/IAM — OIDC, OAuth2, Social Login + เชื่อม Odoo/Nextcloud/n8n |
 | [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — รวมทั้งองค์กร 5 tunnels |

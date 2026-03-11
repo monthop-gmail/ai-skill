@@ -1,0 +1,9 @@
+{
+  "name": "inngest-example",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.21.0",
+    "inngest": "^3.0.0"
+  }
+}

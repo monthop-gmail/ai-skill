@@ -1,0 +1,25 @@
+# Production override
+# PRD ใช้ Inngest Cloud แทน dev server (ไม่ต้องรัน inngest-server เอง)
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  app:
+    environment:
+      - NODE_ENV=production
+      - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY}
+      - INNGEST_SIGNING_KEY=${INNGEST_SIGNING_KEY}
+      - INNGEST_DEV=0
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ปิด dev server ใน PRD (ใช้ Inngest Cloud แทน)
+  inngest-server:
+    profiles:
+      - dev-only
+
+  tunnel-inngest:
+    profiles:
+      - dev-only

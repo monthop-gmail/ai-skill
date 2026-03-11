@@ -1,0 +1,42 @@
+services:
+  # ─── App (Express + Inngest functions) ──────────────
+  app:
+    build: ./app
+    environment:
+      - NODE_ENV=${ENV:-development}
+      - INNGEST_EVENT_KEY=${INNGEST_EVENT_KEY:-local}
+      - INNGEST_SIGNING_KEY=${INNGEST_SIGNING_KEY:-}
+      - INNGEST_DEV=1
+      - INNGEST_BASE_URL=http://inngest-server:8288
+      - APP_URL=http://app:3000
+    depends_on:
+      - inngest-server
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Inngest Dev Server (local) ─────────────────────
+  inngest-server:
+    image: inngest/inngest:latest
+    command: inngest dev -u http://app:3000/api/inngest
+    ports:
+      - "8288:8288"
+    restart: unless-stopped
+
+  # ─── Tunnels ────────────────────────────────────────
+  tunnel-app:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_APP}
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  tunnel-inngest:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_INNGEST}
+    depends_on:
+      - inngest-server
+    restart: unless-stopped
