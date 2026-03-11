@@ -25,3 +25,4 @@
 |---------|-----------|
 | [Hosting Platform Guide](./infrastructure/hosting-skill/README.md) | เปรียบเทียบ 13 แพลตฟอร์ม (Render, Fly.io, Vercel, Cloudflare, AWS, GCP) + LiteLLM, Odoo hosting + AI Platform architecture |
 | [Debian Server Setup & Cloudflare Tunnel](./infrastructure/debian-skill/README.md) | คู่มือตั้งค่า Debian 13 ตั้งแต่ต้น: Docker, Static IP, Cloudflare Tunnel, SSH hardening |
+| [Dev Environment System Design](./infrastructure/dev-env-skill/README.md) | ออกแบบระบบ Dev: 1 Container/1 Repo/1 DNS, Local→PRD sync, แยก env, Secret management (SOPS+age) |
