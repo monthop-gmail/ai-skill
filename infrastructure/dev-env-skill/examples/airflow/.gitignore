@@ -1,0 +1,13 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+db_data/
+redis_data/
+airflow_logs/
+
+# Python
+__pycache__/
+*.pyc

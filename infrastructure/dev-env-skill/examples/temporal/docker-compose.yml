@@ -1,0 +1,81 @@
+services:
+  # ─── Temporal Server ────────────────────────────────
+  temporal:
+    image: temporalio/auto-setup:latest
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${DB_USER:-temporal}
+      - POSTGRES_PWD=${DB_PASS:-temporal}
+      - POSTGRES_SEEDS=db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    volumes:
+      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Temporal Web UI ────────────────────────────────
+  temporal-ui:
+    image: temporalio/ui:latest
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=https://${UI_HOST:-temporal.dev.example.com}
+    depends_on:
+      - temporal
+    restart: unless-stopped
+
+  # ─── Worker (ตัวอย่าง Node.js) ─────────────────────
+  worker:
+    build: ./worker
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_TASK_QUEUE=${TASK_QUEUE:-main-queue}
+    depends_on:
+      - temporal
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── PostgreSQL ─────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER:-temporal}
+      - POSTGRES_PASSWORD=${DB_PASS:-temporal}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-temporal}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Tunnels ────────────────────────────────────────
+  tunnel-ui:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_UI}
+    depends_on:
+      - temporal-ui
+    restart: unless-stopped
+
+  tunnel-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_API}
+    depends_on:
+      - temporal
+    restart: unless-stopped
+
+volumes:
+  db_data:

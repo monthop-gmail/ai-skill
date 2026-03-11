@@ -1,0 +1,108 @@
+services:
+  # ─── Airflow Webserver ──────────────────────────────
+  airflow-webserver:
+    image: apache/airflow:2.10-python3.12
+    command: webserver
+    environment: &airflow-env
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER:-airflow}:${DB_PASS:-airflow}@db:5432/${DB_NAME:-airflow}
+      - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://${DB_USER:-airflow}:${DB_PASS:-airflow}@db:5432/${DB_NAME:-airflow}
+      - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY:-}
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${WEBSERVER_SECRET:-change-me}
+      - AIRFLOW__CORE__LOAD_EXAMPLES=${LOAD_EXAMPLES:-false}
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=${ADMIN_USER:-admin}
+      - _AIRFLOW_WWW_USER_PASSWORD=${ADMIN_PASS:-admin}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Airflow Scheduler ─────────────────────────────
+  airflow-scheduler:
+    image: apache/airflow:2.10-python3.12
+    command: scheduler
+    environment: *airflow-env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ─── Airflow Celery Worker ─────────────────────────
+  airflow-worker:
+    image: apache/airflow:2.10-python3.12
+    command: celery worker
+    environment: *airflow-env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ─── Init: DB migrate + create admin user ──────────
+  airflow-init:
+    image: apache/airflow:2.10-python3.12
+    entrypoint: /bin/bash
+    command: -c "airflow db migrate && airflow users create --username $${_AIRFLOW_WWW_USER_USERNAME} --password $${_AIRFLOW_WWW_USER_PASSWORD} --firstname Admin --lastname User --role Admin --email admin@example.com || true"
+    environment: *airflow-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ─── PostgreSQL ─────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-airflow}
+      - POSTGRES_USER=${DB_USER:-airflow}
+      - POSTGRES_PASSWORD=${DB_PASS:-airflow}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-airflow}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Redis (Celery broker) ─────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Tunnel ────────────────────────────────────────
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - airflow-webserver
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:
+  airflow_logs:
