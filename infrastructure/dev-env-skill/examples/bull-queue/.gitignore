@@ -1,0 +1,10 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Dependencies
+node_modules/
+
+# Data
+redis_data/

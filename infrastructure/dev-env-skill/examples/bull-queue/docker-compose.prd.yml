@@ -1,0 +1,43 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  api:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  worker:
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - BULL_PREFIX=${BULL_PREFIX:-bull}
+      - CONCURRENCY=${WORKER_CONCURRENCY:-10}
+
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    command: >
+      redis-server
+        --maxmemory 1gb
+        --maxmemory-policy noeviction
+        --appendonly yes
+        --appendfsync everysec
+
+  bull-board:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M

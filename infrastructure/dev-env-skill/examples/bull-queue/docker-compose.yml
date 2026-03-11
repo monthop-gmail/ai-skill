@@ -1,0 +1,82 @@
+services:
+  # ─── API: รับ request แล้วส่งเข้า queue ─────────────
+  api:
+    build: ./api
+    environment:
+      - NODE_ENV=${ENV:-development}
+      - REDIS_URL=redis://redis:6379
+      - BULL_PREFIX=${BULL_PREFIX:-bull}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Worker: หยิบ job จาก queue มาทำงาน ─────────────
+  worker:
+    build: ./worker
+    environment:
+      - NODE_ENV=${ENV:-development}
+      - REDIS_URL=redis://redis:6379
+      - BULL_PREFIX=${BULL_PREFIX:-bull}
+      - CONCURRENCY=${WORKER_CONCURRENCY:-5}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Redis: queue storage ───────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+        --maxmemory ${REDIS_MAXMEM:-256mb}
+        --maxmemory-policy noeviction
+        --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Bull Board: Web UI ดูสถานะ queue ───────────────
+  bull-board:
+    build: ./bull-board
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - BULL_PREFIX=${BULL_PREFIX:-bull}
+      - PORT=3000
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── Tunnels ────────────────────────────────────────
+  tunnel-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_API}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  tunnel-board:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_BOARD}
+    depends_on:
+      - bull-board
+    restart: unless-stopped
+
+volumes:
+  redis_data:

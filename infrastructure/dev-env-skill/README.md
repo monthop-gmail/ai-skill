@@ -24,4 +24,5 @@
 | [resilio-sync](./examples/resilio-sync/) | Resilio Sync P2P file sync + CF Tunnel — sync data ข้ามเครื่องอัตโนมัติ |
 | [nextcloud](./examples/nextcloud/) | Nextcloud NAS เต็มรูปแบบ + PG + Redis + CF Tunnel — file sync, WebDAV, external storage |
 | [filebrowser](./examples/filebrowser/) | FileBrowser NAS เบาๆ + CF Tunnel — web file manager น้ำหนักเบา ~15MB RAM |
+| [bull-queue](./examples/bull-queue/) | Redis + BullMQ + Bull Board UI — API → Queue → Worker พร้อม scale + source code |
 | [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — รวมทั้งองค์กร 5 tunnels |

@@ -1,0 +1,10 @@
+{
+  "name": "bull-queue-api",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "bullmq": "^5.0.0",
+    "express": "^4.21.0",
+    "ioredis": "^5.4.0"
+  }
+}

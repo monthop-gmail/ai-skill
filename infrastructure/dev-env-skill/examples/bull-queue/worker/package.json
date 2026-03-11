@@ -1,0 +1,9 @@
+{
+  "name": "bull-queue-worker",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.4.0"
+  }
+}
