@@ -36,27 +36,44 @@ Host: test-server  → CF Tunnel → *.test.example.com
 Host: prd-server   → CF Tunnel → *.example.com
 ```
 
-### CF Tunnel Config ต่อ Environment
+### CF Tunnel + Traefik ต่อ Environment
 
-```yaml
-# dev-server: tunnel/config.yml
-ingress:
-  - hostname: api.dev.example.com
-    service: http://localhost:3000
-  - hostname: web.dev.example.com
-    service: http://localhost:3001
-  - service: http_status:404
+แต่ละ server รัน Traefik + CF Tunnel ตัวเดียว ไม่ต้องแก้ config กลางเมื่อเพิ่ม service
+
+```
+dev-server:  CF Tunnel (*.dev.example.com)  → Traefik :80 → auto route
+test-server: CF Tunnel (*.test.example.com) → Traefik :80 → auto route
+prd-server:  CF Tunnel (*.example.com)      → Traefik :80 → auto route
+```
+
+แต่ละ service ประกาศ hostname ผ่าน Docker label ใน `.env`:
+
+```bash
+# .env (dev)
+TRAEFIK_HOST=api.dev.example.com
+
+# .env (prd)
+TRAEFIK_HOST=api.example.com
 ```
 
 ```yaml
-# prd-server: tunnel/config.yml
-ingress:
-  - hostname: api.example.com
-    service: http://localhost:3000
-  - hostname: web.example.com
-    service: http://localhost:3001
-  - service: http_status:404
+# docker-compose.yml (ใช้ร่วมกันทุก env)
+services:
+  app:
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+    networks:
+      - traefik-net
+
+networks:
+  traefik-net:
+    external: true
 ```
+
+> เพิ่ม service ใหม่ → `docker compose up` จบ ไม่ต้องแก้ไฟล์กลาง
 
 ## หลายทีมทำงานร่วมกัน
 

@@ -32,25 +32,43 @@
 │   ├── .env.enc
 │   └── src/
 │
-└── tunnel/
-    ├── config.yml              # CF Tunnel routing
-    └── docker-compose.yml      # cloudflared as container
+└── traefik/
+    └── docker-compose.yml      # Traefik + Cloudflared
 ```
 
-## Tunnel as Container
+## Traefik + CF Tunnel (ตั้งครั้งเดียวต่อ server)
 
 ```yaml
-# tunnel/docker-compose.yml
+# traefik/docker-compose.yml
 services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker.network=traefik-net"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - traefik-net
+
   cloudflared:
     image: cloudflare/cloudflared:latest
-    command: tunnel --config /etc/cloudflared/config.yml run
-    volumes:
-      - ./config.yml:/etc/cloudflared/config.yml:ro
-      - ./credentials.json:/etc/cloudflared/credentials.json:ro
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
     restart: unless-stopped
     network_mode: host
+
+networks:
+  traefik-net:
+    external: true
 ```
+
+> แต่ละ service ประกาศ hostname ผ่าน Docker label ใน `docker-compose.yml` ของตัวเอง
+> ไม่ต้องแก้ไฟล์กลางเมื่อเพิ่ม/ลบ service
 
 ## ภาพรวมทั้งระบบ
 
@@ -75,10 +93,10 @@ services:
      ┌──────────┐ ┌──────────┐ ┌──────────┐
      │dev-server│ │test-server│ │prd-server│
      │          │ │          │ │          │
+     │ traefik● │ │ traefik● │ │ traefik● │
      │ api  ●   │ │ api  ●   │ │ api  ●   │
      │ web  ●   │ │ web  ●   │ │ web  ●   │
      │ worker ● │ │ worker ● │ │ worker ● │
-     │ tunnel ● │ │ tunnel ● │ │ tunnel ● │
      └────┬─────┘ └────┬─────┘ └────┬─────┘
           │             │             │
           ▼             ▼             ▼
@@ -117,6 +135,5 @@ docker compose up
 - [ ] Encrypt `.env` ด้วย SOPS → `.env.enc`
 - [ ] ตั้งค่า `.github/workflows/deploy.yml`
 - [ ] ตั้งค่า branch protection rules
-- [ ] เพิ่ม hostname ใน CF Tunnel config ทุก environment
-- [ ] อัปเดต DNS record บน Cloudflare
+- [ ] ตั้ง `TRAEFIK_HOST` ใน `.env` ทุก environment
 - [ ] แจ้งทีมที่เกี่ยวข้อง
