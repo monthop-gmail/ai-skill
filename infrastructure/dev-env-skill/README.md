@@ -9,3 +9,10 @@
 | [3. Environment Separation](./03-env-separation.md) | แยก Dev / Test / PRD สำหรับหลายทีม |
 | [4. Secret Management](./04-secret-management.md) | จัดการ .env อย่างปลอดภัยด้วย SOPS + age |
 | [5. Overall Structure](./05-overall-structure.md) | โครงสร้างทั้งระบบ + Quick Start |
+
+## Examples — ตัวอย่างพร้อมใช้
+
+| ตัวอย่าง | รายละเอียด |
+|---------|-----------|
+| [basic](./examples/basic/) | Node.js + PostgreSQL + CF Tunnel — template สำหรับ service ทั่วไป |
+| [odoo](./examples/odoo/) | Odoo ERP + PostgreSQL + CF Tunnel — พร้อม custom addons + backup guide |

@@ -1,0 +1,21 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  odoo:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    # mount custom addons จาก host
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - ./custom-addons:/mnt/extra-addons:ro
+
+  db:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
