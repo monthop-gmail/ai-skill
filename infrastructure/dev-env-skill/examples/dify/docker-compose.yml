@@ -1,0 +1,116 @@
+services:
+  # ─── Dify API ───────────────────────────────────────
+  api:
+    image: langgenius/dify-api:latest
+    environment: &dify-env
+      - MODE=api
+      - SECRET_KEY=${SECRET_KEY:-sk-change-me}
+      - DB_USERNAME=${DB_USER:-dify}
+      - DB_PASSWORD=${DB_PASS:-dify}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_NAME:-dify}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - STORAGE_TYPE=local
+      - STORAGE_LOCAL_PATH=/app/api/storage
+      - VECTOR_STORE=qdrant
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - dify_storage:/app/api/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ─── Dify Worker ────────────────────────────────────
+  worker:
+    image: langgenius/dify-api:latest
+    environment:
+      <<: *dify-env
+      - MODE=worker
+    volumes:
+      - dify_storage:/app/api/storage
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ─── Dify Web (Frontend) ────────────────────────────
+  web:
+    image: langgenius/dify-web:latest
+    environment:
+      - CONSOLE_API_URL=${CONSOLE_API_URL:-https://dify-api.dev.example.com}
+      - APP_API_URL=${APP_API_URL:-https://dify-api.dev.example.com}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ─── PostgreSQL ─────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-dify}
+      - POSTGRES_USER=${DB_USER:-dify}
+      - POSTGRES_PASSWORD=${DB_PASS:-dify}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dify}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Redis ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Qdrant (Vector DB) ────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Tunnels ────────────────────────────────────────
+  tunnel-web:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_WEB}
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  tunnel-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_API}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  dify_storage:
+  db_data:
+  redis_data:
+  qdrant_data:

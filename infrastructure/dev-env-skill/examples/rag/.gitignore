@@ -1,0 +1,12 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Dependencies
+node_modules/
+
+# Data
+qdrant_data/
+ollama_data/
+uploads/

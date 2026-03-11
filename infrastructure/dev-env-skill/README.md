@@ -27,4 +27,6 @@
 | [bull-queue](./examples/bull-queue/) | Redis + BullMQ + Bull Board UI — API → Queue → Worker พร้อม scale + source code |
 | [temporal](./examples/temporal/) | Temporal durable workflow — code-first, retry, long-running + Node.js source code |
 | [airflow](./examples/airflow/) | Apache Airflow DAG scheduling — ETL pipeline, parallel tasks + Python DAG examples |
+| [rag](./examples/rag/) | Custom RAG: Qdrant + Ollama/OpenAI + Node.js API — code-first, full source code |
+| [dify](./examples/dify/) | Dify AI Platform: low-code RAG, Agent, Workflow — ต่อ LLM ทุกเจ้าผ่าน UI |
 | [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — รวมทั้งองค์กร 5 tunnels |

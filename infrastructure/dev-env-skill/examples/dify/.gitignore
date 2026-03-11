@@ -1,0 +1,10 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+db_data/
+redis_data/
+qdrant_data/
+dify_storage/
