@@ -1,0 +1,74 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:4000}
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    environment:
+      - NODE_ENV=${ENV:-development}
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME:-app}
+      - DB_USER=${DB_USER:-app}
+      - DB_PASS=${DB_PASS:-secret}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-dev-secret}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-app}
+      - POSTGRES_USER=${DB_USER:-app}
+      - POSTGRES_PASSWORD=${DB_PASS:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-app}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  tunnel-web:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_WEB}
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+  tunnel-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_API}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:

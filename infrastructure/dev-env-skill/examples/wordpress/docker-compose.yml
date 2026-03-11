@@ -1,0 +1,62 @@
+services:
+  wordpress:
+    image: wordpress:6-php8.3-apache
+    environment:
+      - WORDPRESS_DB_HOST=db
+      - WORDPRESS_DB_NAME=${DB_NAME:-wordpress}
+      - WORDPRESS_DB_USER=${DB_USER:-wordpress}
+      - WORDPRESS_DB_PASSWORD=${DB_PASS:-wordpress}
+      - WORDPRESS_CONFIG_EXTRA=${WP_EXTRA_CONFIG:-}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: mariadb:11
+    environment:
+      - MARIADB_DATABASE=${DB_NAME:-wordpress}
+      - MARIADB_USER=${DB_USER:-wordpress}
+      - MARIADB_PASSWORD=${DB_PASS:-wordpress}
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASS:-rootpass}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+
+volumes:
+  wp_data:
+  db_data:
+  redis_data:

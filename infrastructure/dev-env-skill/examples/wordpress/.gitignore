@@ -1,0 +1,12 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+db_data/
+wp_data/
+redis_data/
+
+# WordPress uploads (too large for git)
+wp-content/uploads/
