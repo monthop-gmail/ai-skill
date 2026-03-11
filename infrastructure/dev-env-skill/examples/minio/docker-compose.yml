@@ -1,0 +1,58 @@
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-changeme123}
+      - MINIO_BROWSER_REDIRECT_URL=${MINIO_CONSOLE_URL:-https://minio-console.dev.example.com}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # สร้าง default bucket ตอน startup
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+        mc mb --ignore-existing local/$${DEFAULT_BUCKET:-uploads};
+        mc anonymous set download local/$${DEFAULT_BUCKET:-uploads}/public;
+        echo 'Bucket ready';
+      "
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-changeme123}
+      - DEFAULT_BUCKET=${DEFAULT_BUCKET:-uploads}
+
+  tunnel-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_API}
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+  tunnel-console:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_CONSOLE}
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  minio_data:
