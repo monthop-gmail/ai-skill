@@ -10,6 +10,7 @@
 | **Branch** | feature branch | `develop` | `main` |
 | **Env file** | `.env.dev` | `.env.test` | `.env.prd` |
 | **Server** | dev-server | test-server | prd-server |
+| **CF Tunnel** | tunnel ต่อ service (dev) | tunnel ต่อ service (test) | tunnel ต่อ service (prd) |
 
 ## Git Branching Strategy
 
@@ -31,49 +32,54 @@ feature/xxx ──► develop ──► main
 ## Server / Host แยก
 
 ```
-Host: dev-server   → CF Tunnel → *.dev.example.com
-Host: test-server  → CF Tunnel → *.test.example.com
-Host: prd-server   → CF Tunnel → *.example.com
+Host: dev-server   → แต่ละ service รัน CF Tunnel sidecar → *.dev.example.com
+Host: test-server  → แต่ละ service รัน CF Tunnel sidecar → *.test.example.com
+Host: prd-server   → แต่ละ service รัน CF Tunnel sidecar → *.example.com
 ```
 
-### CF Tunnel + Traefik ต่อ Environment
+### CF Tunnel ต่อ Environment
 
-แต่ละ server รัน Traefik + CF Tunnel ตัวเดียว ไม่ต้องแก้ config กลางเมื่อเพิ่ม service
+แต่ละ service × แต่ละ env = 1 Tunnel บน Cloudflare Dashboard
 
 ```
-dev-server:  CF Tunnel (*.dev.example.com)  → Traefik :80 → auto route
-test-server: CF Tunnel (*.test.example.com) → Traefik :80 → auto route
-prd-server:  CF Tunnel (*.example.com)      → Traefik :80 → auto route
+Cloudflare Dashboard:
+├── Tunnel: api-dev   → route: api.dev.example.com   → http://app:3000
+├── Tunnel: api-test  → route: api.test.example.com  → http://app:3000
+├── Tunnel: api-prd   → route: api.example.com       → http://app:3000
+├── Tunnel: web-dev   → route: web.dev.example.com   → http://app:3001
+├── Tunnel: web-test  → route: web.test.example.com  → http://app:3001
+└── Tunnel: web-prd   → route: web.example.com       → http://app:3001
 ```
 
-แต่ละ service ประกาศ hostname ผ่าน Docker label ใน `.env`:
+แต่ละ service ต่าง env กันแค่ `.env`:
 
 ```bash
 # .env (dev)
-TRAEFIK_HOST=api.dev.example.com
+CF_TUNNEL_TOKEN=eyJhIjoixxxxx_dev
+DB_HOST=localhost
 
 # .env (prd)
-TRAEFIK_HOST=api.example.com
+CF_TUNNEL_TOKEN=eyJhIjoixxxxx_prd
+DB_HOST=db.internal
 ```
 
 ```yaml
-# docker-compose.yml (ใช้ร่วมกันทุก env)
+# docker-compose.yml (ใช้ร่วมกันทุก env — ไม่ต้องแก้)
 services:
   app:
     build: .
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`${TRAEFIK_HOST}`)"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
-    networks:
-      - traefik-net
+    environment:
+      - DB_HOST=${DB_HOST}
 
-networks:
-  traefik-net:
-    external: true
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - app
+    restart: unless-stopped
 ```
 
-> เพิ่ม service ใหม่ → `docker compose up` จบ ไม่ต้องแก้ไฟล์กลาง
+> เพิ่ม service ใหม่ → สร้าง Tunnel บน Dashboard + `docker compose up` จบ
 
 ## หลายทีมทำงานร่วมกัน
 

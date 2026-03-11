@@ -12,8 +12,6 @@
 services:
   app:
     build: .
-    ports:
-      - "${APP_PORT:-3000}:3000"
     environment:
       - NODE_ENV=${ENV}
       - DB_HOST=${DB_HOST}
@@ -24,16 +22,23 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - app
+    restart: unless-stopped
 ```
 
 ## วิธีรัน
 
 ```bash
-# local (dev)
-ENV=development DB_HOST=localhost docker compose up
+# local (dev) — .env มี CF_TUNNEL_TOKEN ของ dev tunnel
+docker compose up
 
-# production
-ENV=production DB_HOST=db.internal docker compose up -d
+# production — .env มี CF_TUNNEL_TOKEN ของ prd tunnel
+docker compose up -d
 ```
 
 ## กรณีที่ PRD ต้องการ config พิเศษ
@@ -93,12 +98,15 @@ Local Dev                    Production
 ─────────                    ──────────
 docker-compose.yml    ─────► docker-compose.yml (เหมือนกัน)
 .env (dev values)            .env (prd values)
+ └─ CF_TUNNEL_TOKEN (dev)     └─ CF_TUNNEL_TOKEN (prd)
+ └─ DB_HOST=localhost          └─ DB_HOST=db.internal
                              + docker-compose.prd.yml (override)
 ```
 
 ## สิ่งที่ไม่ต้องปรับ
 
 - **Dockerfile** — เหมือนกันทุก env
-- **docker-compose.yml** — เหมือนกันทุก env
+- **docker-compose.yml** — เหมือนกันทุก env (รวม tunnel sidecar)
 - **Source code** — เหมือนกันทุก env
-- **เปลี่ยนแค่ .env** — ค่า config ที่ต่างกันอยู่ใน environment variables เท่านั้น
+- **เปลี่ยนแค่ .env** — ค่า config + CF Tunnel Token ที่ต่างกันอยู่ใน `.env` เท่านั้น
+- **Route/DNS** — ตั้งค่าบน Cloudflare Dashboard แยกตาม env

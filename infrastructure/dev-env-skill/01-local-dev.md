@@ -4,116 +4,87 @@
 
 ## หลักการ
 
-แต่ละ service จะมี repo ของตัวเอง รันเป็น container เดียว และมี DNS เฉพาะตัวผ่าน Cloudflare Tunnel
+แต่ละ service จะมี repo ของตัวเอง รันเป็น container เดียว มี CF Tunnel sidecar ของตัวเอง
+และมี DNS เฉพาะตัวที่ตั้งค่าบน Cloudflare Dashboard — **ครบจบในตัว ไม่มีไฟล์กลาง**
 
 ## โครงสร้าง Repo ต่อ Service
 
 ```
 project-a/
-├── docker-compose.yml      # รันได้ทั้ง local + prd
+├── docker-compose.yml      # app + tunnel sidecar (ใช้ทั้ง local + prd)
 ├── Dockerfile
 ├── .env.example            # template (commit ได้)
 ├── .env                    # ค่าจริง (gitignore)
 └── src/
 ```
 
-## DNS ผ่าน Traefik + Cloudflare Tunnel
+## DNS ผ่าน Cloudflare DNS + CF Tunnel Sidecar
 
-ใช้ **Traefik** เป็น reverse proxy ที่ auto-discover service จาก Docker labels
-แต่ละ service ประกาศ hostname ของตัวเองใน `docker-compose.yml` — **ไม่ต้องแก้ไฟล์กลาง**
-
-CF Tunnel ชี้มาที่ Traefik ตัวเดียว → Traefik route ไปยัง service ที่ถูกต้องตาม hostname
+แต่ละ service รัน `cloudflared` เป็น sidecar container ของตัวเอง
+Route ตั้งค่าบน **Cloudflare Dashboard** ไม่ต้องแก้ config file ใดๆ
 
 ```
-Internet → CF Tunnel → Traefik (:80) → auto route ตาม hostname
-                                        ├── api.dev.example.com  → api:3000
-                                        ├── web.dev.example.com  → web:3001
-                                        └── xxx.dev.example.com  → xxx:N
+Internet → CF DNS → CF Tunnel (sidecar) → app container
 ```
 
-### Shared Network + Traefik (ตั้งครั้งเดียว)
-
-```bash
-# สร้าง shared network ที่ทุก service ใช้ร่วมกัน
-docker network create traefik-net
-```
-
-```yaml
-# traefik/docker-compose.yml (รันครั้งเดียวบน host)
-services:
-  traefik:
-    image: traefik:v3
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
-      - "--providers.docker.network=traefik-net"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
-    networks:
-      - traefik-net
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
-    restart: unless-stopped
-    network_mode: host
-
-networks:
-  traefik-net:
-    external: true
-```
-
-CF Tunnel ตั้งค่าบน Cloudflare Dashboard:
-- `*.dev.example.com` → `http://localhost:80` (ชี้ไป Traefik)
-
-### แต่ละ Service ประกาศ hostname เอง
+### docker-compose.yml ต่อ Service
 
 ```yaml
 # project-a/docker-compose.yml
 services:
   app:
     build: .
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.project-a.rule=Host(`project-a.dev.example.com`)"
-      - "traefik.http.services.project-a.loadbalancer.server.port=3000"
-    networks:
-      - traefik-net
+    restart: unless-stopped
 
-networks:
-  traefik-net:
-    external: true
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - app
+    restart: unless-stopped
 ```
 
-> เพิ่ม service ใหม่ → แค่ `docker compose up` ไม่ต้องแก้ไฟล์กลางใดๆ
-> ลบ service → แค่ `docker compose down` Traefik หยุด route ให้อัตโนมัติ
+```bash
+# .env
+CF_TUNNEL_TOKEN=eyJhIjoixxxxx
+```
+
+### ตั้งค่าบน Cloudflare Dashboard
+
+1. ไปที่ **Zero Trust → Networks → Tunnels**
+2. สร้าง Tunnel ใหม่ → ได้ **Token**
+3. เพิ่ม **Public Hostname**:
+   - Subdomain: `project-a` / Domain: `dev.example.com`
+   - Service: `http://app:3000`
+4. เก็บ Token ไว้ใน `.env` → `CF_TUNNEL_TOKEN=eyJhIjoixxxxx`
+
+> ทุกอย่างจัดการบน Dashboard — ไม่ต้องมี config.yml บน server
 
 ### เริ่มต้นใช้งาน
 
 ```bash
-# 1. สร้าง network
-docker network create traefik-net
+# 1. Clone repo
+git clone git@github.com:team/project-a.git
+cd project-a
 
-# 2. ตั้ง CF Tunnel (ทำครั้งเดียวบน Cloudflare Dashboard)
-#    สร้าง tunnel → ได้ token
-#    route: *.dev.example.com → http://localhost:80
+# 2. ตั้ง CF Tunnel บน Cloudflare Dashboard → ได้ token
 
-# 3. รัน Traefik + Cloudflared
-cd traefik && CF_TUNNEL_TOKEN=xxxx docker compose up -d
+# 3. ใส่ token ใน .env
+echo "CF_TUNNEL_TOKEN=eyJhIjoixxxxx" > .env
 
-# 4. รัน service
-cd ../project-a && docker compose up -d
-# เข้าได้ทันที: https://project-a.dev.example.com
+# 4. รัน
+docker compose up -d
+
+# 5. เข้าใช้งาน
+#    http://localhost:3000              (local)
+#    https://project-a.dev.example.com  (ผ่าน CF Tunnel)
 ```
 
 ## ข้อดี
 
-- **แยกชัดเจน** — แต่ละ service มี lifecycle ของตัวเอง
+- **ครบจบในตัว** — แต่ละ repo มี app + tunnel ไม่พึ่งพา service กลาง
+- **ไม่มีไฟล์กลาง** — เพิ่ม/ลบ service แค่ `docker compose up/down`
 - **ง่ายต่อการ debug** — ดู log เฉพาะ container ที่สนใจ
 - **เหมือน production** — รันบน Docker เหมือนกันทั้ง local และ prd
 - **เข้าถึงง่าย** — ทุก service มี URL จริงผ่าน CF Tunnel
-- **ไม่ต้องแก้ไฟล์กลาง** — เพิ่ม/ลบ service แค่ `docker compose up/down`
+- **ตั้งค่าผ่าน Dashboard** — ไม่ต้องแก้ config file ใดๆ บน server
