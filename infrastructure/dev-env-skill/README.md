@@ -22,4 +22,6 @@
 | [wordpress](./examples/wordpress/) | WordPress + MariaDB + Redis Object Cache + CF Tunnel — พร้อม custom plugins/themes |
 | [minio](./examples/minio/) | MinIO S3-compatible Object Storage + CF Tunnel — พร้อม SDK examples (Node.js, Python) |
 | [resilio-sync](./examples/resilio-sync/) | Resilio Sync P2P file sync + CF Tunnel — sync data ข้ามเครื่องอัตโนมัติ |
+| [nextcloud](./examples/nextcloud/) | Nextcloud NAS เต็มรูปแบบ + PG + Redis + CF Tunnel — file sync, WebDAV, external storage |
+| [filebrowser](./examples/filebrowser/) | FileBrowser NAS เบาๆ + CF Tunnel — web file manager น้ำหนักเบา ~15MB RAM |
 | [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — รวมทั้งองค์กร 5 tunnels |

@@ -1,0 +1,15 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  filebrowser:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    # mount external disk
+    volumes:
+      - /mnt/disk1/files:/srv
+      - fb_db:/database
+      - ./filebrowser.json:/.filebrowser.json:ro

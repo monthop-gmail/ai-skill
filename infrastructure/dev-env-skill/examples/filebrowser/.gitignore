@@ -1,0 +1,8 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+data/
+fb_db/

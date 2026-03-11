@@ -1,0 +1,11 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+db_data/
+nc_html/
+nc_data/
+external/
+redis_data/

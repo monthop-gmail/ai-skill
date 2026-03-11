@@ -1,0 +1,29 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  nextcloud:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    # mount external disk สำหรับ data
+    volumes:
+      - nc_html:/var/www/html
+      - /mnt/disk1/nextcloud-data:/var/www/html/data
+      - /mnt/disk1/external:/mnt/external
+
+  db:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M

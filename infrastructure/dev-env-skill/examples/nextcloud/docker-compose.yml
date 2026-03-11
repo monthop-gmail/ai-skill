@@ -1,0 +1,80 @@
+services:
+  nextcloud:
+    image: nextcloud:30-apache
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${DB_NAME:-nextcloud}
+      - POSTGRES_USER=${DB_USER:-nextcloud}
+      - POSTGRES_PASSWORD=${DB_PASS:-nextcloud}
+      - REDIS_HOST=redis
+      - NEXTCLOUD_ADMIN_USER=${ADMIN_USER:-admin}
+      - NEXTCLOUD_ADMIN_PASSWORD=${ADMIN_PASS:-changeme}
+      - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAIN:-cloud.dev.example.com}
+      - OVERWRITEPROTOCOL=https
+      - OVERWRITEHOST=${TRUSTED_DOMAIN:-cloud.dev.example.com}
+    volumes:
+      - nc_html:/var/www/html
+      - nc_data:/var/www/html/data
+      - ${EXTERNAL_STORAGE:-./external}:/mnt/external
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-nextcloud}
+      - POSTGRES_USER=${DB_USER:-nextcloud}
+      - POSTGRES_PASSWORD=${DB_PASS:-nextcloud}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nextcloud}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # cron job สำหรับ background tasks
+  cron:
+    image: nextcloud:30-apache
+    entrypoint: /cron.sh
+    volumes:
+      - nc_html:/var/www/html
+      - nc_data:/var/www/html/data
+    depends_on:
+      - nextcloud
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - nextcloud
+    restart: unless-stopped
+
+volumes:
+  nc_html:
+  nc_data:
+  db_data:
+  redis_data:

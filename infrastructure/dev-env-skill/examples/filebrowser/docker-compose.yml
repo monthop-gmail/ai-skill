@@ -1,0 +1,26 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+    volumes:
+      - ${DATA_DIR:-./data}:/srv
+      - fb_db:/database
+      - ./filebrowser.json:/.filebrowser.json:ro
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - filebrowser
+    restart: unless-stopped
+
+volumes:
+  fb_db:
