@@ -10,3 +10,4 @@
 - [Hosting Skill - Hosting Platform Guide](./hosting-skill/README.md)
 - [Coding Agent Skill - AI Coding Agents](./coding-agent-skill/README.md)
 - [Debian Skill - SSH via Cloudflare Tunnel](./debian-skill/README.md)
+- [AI Coding - AI Coding Agents & Developer Tools](./ai-coding/README.md)
