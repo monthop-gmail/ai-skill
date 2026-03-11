@@ -1,0 +1,10 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  resilio:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G

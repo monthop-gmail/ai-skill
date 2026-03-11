@@ -1,0 +1,8 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Sync data
+data/
+resilio_config/

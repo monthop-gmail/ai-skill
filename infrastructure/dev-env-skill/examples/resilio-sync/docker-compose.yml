@@ -1,0 +1,27 @@
+services:
+  resilio:
+    image: resilio/sync:latest
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+    volumes:
+      - resilio_config:/mnt/sync
+      - ${SYNC_DIR:-./data}:/mnt/mounted_folders/data
+    ports:
+      - "55555:55555"   # P2P data transfer
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - resilio
+    restart: unless-stopped
+
+volumes:
+  resilio_config:
