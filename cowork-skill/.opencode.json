@@ -1,0 +1,19 @@
+{
+  "": "https://opencode.ai/config.json",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "apiKey": "{env:ANTHROPIC_API_KEY}"
+      }
+    }
+  },
+  "permission": {
+    "bash": {
+      "sudo *": "deny",
+      "su *": "deny",
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "websearch": "allow"
+  }
+}
