@@ -8,3 +8,4 @@
 - [RAG Frameworks Guide 2026](./rag-skill/README.md)
 - [Knowledge Work Plugins (cowork-skill)](./cowork-skill/README.md)
 - [Hosting Skill - Hosting Platform Guide](./hosting-skill/README.md)
+- [Coding Agent Skill - AI Coding Agents](./coding-agent-skill/README.md)
