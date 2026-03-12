@@ -117,6 +117,9 @@ npm install -g @qwen-code/qwen-code
 
 # Groq Code CLI
 npm install -g groq-code-cli
+
+# GitHub Copilot CLI
+npm install -g @github/copilot
 ```
 
 ### 🪟 Windows
@@ -129,6 +132,7 @@ npm install -g @google/gemini-cli
 npm install -g @openai/codex
 npm install -g @anthropic-ai/claude-code
 npm install -g groq-code-cli
+npm install -g @github/copilot
 ```
 
 ### 📦 ติดตั้งแต่ละตัว
@@ -140,7 +144,12 @@ gemini auth login
 ```
 
 #### GitHub Copilot
-1. ติดตั้ง Extension ใน VS Code
+```bash
+# CLI
+npm install -g @github/copilot
+github-copilot auth login
+```
+1. หรือติดตั้ง Extension ใน VS Code
 2. Login ด้วย GitHub Account
 3. Student? สมัคร [GitHub Student Developer Pack](https://education.github.com/pack)
 
