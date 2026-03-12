@@ -152,6 +152,8 @@ docker run -d -p 3000:3000 flowiseai/flowise
 
 ## 📚 Resources
 
+- **Thai Legal RAG Guide:** [คู่มือระบบ RAG กฎหมายไทยสำหรับ LINE Bot](./thai-legal-rag-guide.md) — Dataset, Architecture, MCP Server, Cost estimate
+
 - **เปรียบเทียบ RAG Frameworks:** https://www.firecrawl.dev/blog/best-open-source-rag-frameworks
 - **Top RAG Tools 2026:** https://www.meilisearch.com/blog/rag-tools
 - **Self-hosted RAG:** https://github.com/mylonasc/self-hosted-rag
