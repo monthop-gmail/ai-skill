@@ -62,6 +62,8 @@
 | 1️⃣ | **Gemini CLI** | ฟรีสุด! แค่มี Google Account, ใช้ Gemini 2.5 Pro, Context 1M tokens |
 | 2️⃣ | **GitHub Copilot Free** | 2,000 completions/เดือน เพียงพอสำหรับใช้เล่นๆ, Student ได้ Pro ฟรี! |
 | 3️⃣ | **Qwen Code** | ฟรีจาก Alibaba, Open Source, โมเดลเฉพาะทาง coding |
+| 4️⃣ | **OpenCode** | Open Source CLI, BYOK ใช้กับ LLM ได้หลายเจ้า |
+| 5️⃣ | **Groq Code CLI** | CLI เร็วมาก! ใช้ Groq API Key ฟรี (free tier มี), รองรับ Kimi K2, Llama |
 
 ### 🥈 สำหรับผู้ใช้ขั้นสูง (BYOK)
 
