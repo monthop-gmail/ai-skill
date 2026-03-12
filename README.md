@@ -10,6 +10,7 @@
 |---------|-----------|
 | [Prompt vs. Skill vs. Workflow](./ai-concepts/ai-working-levels-guide/README.md) | อธิบาย 3 ระดับการทำงานของ AI พร้อมตัวอย่าง CrewAI |
 | [RAG Frameworks Guide](./ai-concepts/rag-skill/README.md) | เปรียบเทียบ RAG Frameworks (LangChain, Dify, AnythingLLM, Flowise) พร้อม Docker setup และ MCP support |
+| [Thai Legal RAG Guide](./ai-concepts/rag-skill/thai-legal-rag-guide.md) | คู่มือระบบ RAG กฎหมายไทย: Dataset+Claude+ChromaDB, เปรียบเทียบ RAG vs Fine-tuned, MCP Server, Cost estimate |
 
 ## AI Tools - เครื่องมือ AI สำหรับนักพัฒนา
 
