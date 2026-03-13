@@ -9,6 +9,11 @@ services:
       - ${SYNC_DIR:-./data}:/mnt/mounted_folders/data
     ports:
       - "55555:55555"   # P2P data transfer
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/gui/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
     logging:
       driver: json-file
