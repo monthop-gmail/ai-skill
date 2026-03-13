@@ -1,4 +1,4 @@
-# Dev Environment Checklist
+# Dev Environment Audit Checklist
 
 Checklist รวมจาก [01-local-dev](./01-local-dev.md) ถึง [05-overall-structure](./05-overall-structure.md)
 ใช้ตรวจสอบว่า service/ecosystem ตั้งค่าครบตาม pattern
@@ -9,31 +9,32 @@ Checklist รวมจาก [01-local-dev](./01-local-dev.md) ถึง [05-ove
 
 > Ref: [01-local-dev.md](./01-local-dev.md)
 
-- [ ] 1 service = 1 repo = 1 `docker-compose.yml`
-- [ ] มี CF Tunnel sidecar ใน compose (`cloudflare/cloudflared`)
-- [ ] Tunnel ใช้ `--no-autoupdate`
-- [ ] Route ตั้งค่าบน **Cloudflare Dashboard** (ไม่ใช้ config.yml)
-- [ ] มี `.env.example` (template, commit ได้)
-- [ ] มี `.env` (ค่าจริง, **gitignore**)
-- [ ] `docker compose up` แล้วใช้งานได้ทั้ง localhost และ CF Tunnel URL
-- [ ] (Multi-service) ใช้ compose `include` แยกไฟล์ต่อ service (v2.20+)
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 1.1 | 1 service = 1 repo | แต่ละ service อยู่ใน repo แยก มี `docker-compose.yml` ของตัวเอง | | |
+| 1.2 | CF Tunnel sidecar | มี container `cloudflare/cloudflared` ใน compose | | |
+| 1.3 | `--no-autoupdate` | Tunnel command ใช้ flag `--no-autoupdate` | | |
+| 1.4 | Route via Dashboard | Route ตั้งค่าบน Cloudflare Dashboard (ไม่ใช้ config.yml) | | |
+| 1.5 | `.env.example` | มี template `.env.example` (commit ได้) | | |
+| 1.6 | `.env` gitignored | มี `.env` ค่าจริง อยู่ใน `.gitignore` | | |
+| 1.7 | `docker compose up` works | รันแล้วใช้งานได้ทั้ง localhost และ CF Tunnel URL | | |
+| 1.8 | Modular compose (ถ้า multi-service) | ใช้ `include:` แยกไฟล์ต่อ service (Docker Compose v2.20+) | | |
 
 ## 2. Local to Production Sync
 
 > Ref: [02-local-to-prd.md](./02-local-to-prd.md)
 
-- [ ] `docker-compose.yml` **เหมือนกัน**ทุก env (dev/test/prd)
-- [ ] ต่างกันแค่ `.env` (DB_HOST, CF_TUNNEL_TOKEN, etc.)
-- [ ] มี `docker-compose.prd.yml` สำหรับ production override
-  - [ ] resource limits (cpu, memory)
-  - [ ] replicas (ถ้าต้องการ)
-  - [ ] healthcheck (ถ้าไม่มีใน base)
-- [ ] วิธีรัน prd: `docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d`
-- [ ] มี deploy script (`scripts/deploy.sh`) หรือ CI/CD workflow
-- [ ] สิ่งที่ **ไม่ต้องปรับ** ข้าม env:
-  - [ ] Dockerfile
-  - [ ] docker-compose.yml
-  - [ ] Source code
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 2.1 | Compose เหมือนกันทุก env | `docker-compose.yml` ใช้ร่วมกัน dev/test/prd | | |
+| 2.2 | ต่างกันแค่ `.env` | DB_HOST, CF_TUNNEL_TOKEN ฯลฯ แยกตาม env | | |
+| 2.3 | `docker-compose.prd.yml` | มี production override file | | |
+| 2.4 | Resource limits | prd override มี cpu/memory limits | | |
+| 2.5 | Replicas | prd override มี replicas (ถ้าต้องการ) | | |
+| 2.6 | Healthcheck | prd override มี healthcheck (ถ้าไม่มีใน base) | | |
+| 2.7 | วิธีรัน prd | `docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d` | | |
+| 2.8 | Deploy script | มี `scripts/deploy.sh` หรือ CI/CD workflow | | |
+| 2.9 | ไม่ต้องปรับข้าม env | Dockerfile, docker-compose.yml, source code เหมือนกันทุก env | | |
 
 ## 3. Environment Separation
 
@@ -41,33 +42,42 @@ Checklist รวมจาก [01-local-dev](./01-local-dev.md) ถึง [05-ove
 
 ### DNS แยกตาม env
 
-- [ ] Dev: `svc.dev.example.com`
-- [ ] Test: `svc.test.example.com`
-- [ ] Prd: `svc.example.com`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 3.1 | Dev DNS | `svc.dev.example.com` | | |
+| 3.2 | Test DNS | `svc.test.example.com` | | |
+| 3.3 | Prd DNS | `svc.example.com` | | |
 
 ### Git Branching
 
-- [ ] `feature/xxx` → `develop` → `main`
-- [ ] Push to `develop` → auto deploy test
-- [ ] Push to `main` → auto deploy prd
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 3.4 | Branch flow | `feature/xxx` → `develop` → `main` | | |
+| 3.5 | Auto deploy test | Push to `develop` → auto deploy test env | | |
+| 3.6 | Auto deploy prd | Push to `main` → auto deploy prd env | | |
 
 ### CF Tunnel ต่อ env
 
-- [ ] แต่ละ service × แต่ละ env = 1 Tunnel
-- [ ] Token เก็บใน `.env` แยกต่อ env
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 3.7 | Tunnel per env | แต่ละ service × แต่ละ env = 1 Tunnel | | |
+| 3.8 | Token แยก env | Token เก็บใน `.env` แยกต่อ env | | |
 
 ### Team Collaboration
 
-- [ ] Branch protection rules:
-  - [ ] `develop` → 1 approval
-  - [ ] `main` → 2 approvals + CI pass
-- [ ] มี `CODEOWNERS` กำหนดว่าใครดูแลไฟล์ไหน
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 3.9 | Branch protection (develop) | `develop` → ต้องมี 1 approval | | |
+| 3.10 | Branch protection (main) | `main` → ต้องมี 2 approvals + CI pass | | |
+| 3.11 | CODEOWNERS | มี `CODEOWNERS` กำหนดว่าใครดูแลไฟล์ไหน | | |
 
 ### CI/CD
 
-- [ ] มี `.github/workflows/deploy.yml`
-- [ ] Auto set env (dev/test/prd) จาก branch
-- [ ] Deploy: `git pull` → `sops decrypt` → `docker compose up -d --build`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 3.12 | Deploy workflow | มี `.github/workflows/deploy.yml` | | |
+| 3.13 | Auto set env | ตั้ง env (dev/test/prd) จาก branch อัตโนมัติ | | |
+| 3.14 | Deploy steps | `git pull` → `sops decrypt` → `docker compose up -d --build` | | |
 
 ## 4. Secret Management
 
@@ -75,45 +85,59 @@ Checklist รวมจาก [01-local-dev](./01-local-dev.md) ถึง [05-ove
 
 ### SOPS + age Setup
 
-- [ ] ติดตั้ง `sops` + `age`
-- [ ] สร้าง key pair: `age-keygen -o keys.txt`
-- [ ] เก็บ key ที่ `~/.config/sops/age/keys.txt`
-- [ ] ตั้ง `export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt` ใน shell
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.1 | ติดตั้ง SOPS + age | `sops` และ `age` ติดตั้งแล้ว | | |
+| 4.2 | Key pair | สร้างด้วย `age-keygen -o keys.txt` | | |
+| 4.3 | Key location | เก็บที่ `~/.config/sops/age/keys.txt` | | |
+| 4.4 | Shell env | `export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt` ใน shell | | |
 
 ### Config
 
-- [ ] มี `.sops.yaml` (commit ได้) — กำหนด public keys ที่ authorized
-- [ ] มี `.env.enc` (commit ได้) — encrypted env file
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.5 | `.sops.yaml` | มี config file (commit ได้) กำหนด public keys ที่ authorized | | |
+| 4.6 | `.env.enc` | มี encrypted env file (commit ได้) | | |
 
 ### .gitignore
 
-- [ ] `.env` อยู่ใน .gitignore
-- [ ] `*.key` อยู่ใน .gitignore
-- [ ] `keys.txt` อยู่ใน .gitignore
-- [ ] `.env.enc` **ไม่อยู่**ใน .gitignore (commit ได้)
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.7 | `.env` ignored | `.env` อยู่ใน .gitignore | | |
+| 4.8 | `*.key` ignored | `*.key` อยู่ใน .gitignore | | |
+| 4.9 | `keys.txt` ignored | `keys.txt` อยู่ใน .gitignore | | |
+| 4.10 | `.env.enc` tracked | `.env.enc` **ไม่อยู่**ใน .gitignore (commit ได้) | | |
 
 ### Encrypt / Decrypt
 
-- [ ] Encrypt: `sops --encrypt .env > .env.enc`
-- [ ] Decrypt: `sops --decrypt .env.enc > .env`
-- [ ] Edit: `sops .env.enc`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.11 | Encrypt | `sops --encrypt .env > .env.enc` | | |
+| 4.12 | Decrypt | `sops --decrypt .env.enc > .env` | | |
+| 4.13 | Edit | `sops .env.enc` | | |
 
 ### Key Distribution
 
-- [ ] ส่ง key ผ่าน: 1Password / Bitwarden / Signal / ให้ตรงมือ
-- [ ] **ห้าม**: Email, Slack, LINE, ช่องทางไม่เข้ารหัส
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.14 | ช่องทางปลอดภัย | ส่ง key ผ่าน 1Password / Bitwarden / Signal / ให้ตรงมือ | | |
+| 4.15 | ห้ามช่องทางไม่เข้ารหัส | ห้าม Email, Slack, LINE, ช่องทางไม่เข้ารหัส | | |
 
-### CI/CD
+### CI/CD Secrets
 
-- [ ] เก็บ `SOPS_AGE_KEY` (private key content) ใน GitHub Secrets
-- [ ] Workflow: `sops --decrypt .env.enc > .env`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.16 | GitHub Secrets | เก็บ `SOPS_AGE_KEY` (private key content) ใน GitHub Secrets | | |
+| 4.17 | Workflow decrypt | `sops --decrypt .env.enc > .env` ใน workflow | | |
 
-### Key Rotation (เมื่อคนออกจากทีม)
+### Key Rotation
 
-- [ ] สร้าง key ใหม่
-- [ ] อัปเดต `.sops.yaml` — ลบ public key คนที่ออก
-- [ ] Re-encrypt: `sops updatekeys .env.enc`
-- [ ] ส่ง key ใหม่ให้ทีม
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 4.18 | สร้าง key ใหม่ | สร้าง key pair ใหม่เมื่อคนออกจากทีม | | |
+| 4.19 | อัปเดต `.sops.yaml` | ลบ public key คนที่ออก | | |
+| 4.20 | Re-encrypt | `sops updatekeys .env.enc` | | |
+| 4.21 | แจ้งทีม | ส่ง key ใหม่ให้ทีม | | |
 
 ## 5. Overall Structure
 
@@ -121,35 +145,53 @@ Checklist รวมจาก [01-local-dev](./01-local-dev.md) ถึง [05-ove
 
 ### Directory Layout
 
-- [ ] แต่ละ service อยู่ใน `/opt/services/{name}/`
-- [ ] ทุก service มี:
-  - [ ] `docker-compose.yml` (app + tunnel sidecar)
-  - [ ] `docker-compose.prd.yml` (override)
-  - [ ] `Dockerfile`
-  - [ ] `.env.example`
-  - [ ] `.env.enc` (encrypted)
-  - [ ] `.sops.yaml`
-  - [ ] `.github/workflows/deploy.yml`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 5.1 | Service path | แต่ละ service อยู่ใน `/opt/services/{name}/` | | |
+| 5.2 | `docker-compose.yml` | app + tunnel sidecar | | |
+| 5.3 | `docker-compose.prd.yml` | production override | | |
+| 5.4 | `Dockerfile` | build instructions | | |
+| 5.5 | `.env.example` | template env file | | |
+| 5.6 | `.env.enc` | encrypted env file | | |
+| 5.7 | `.sops.yaml` | SOPS config | | |
+| 5.8 | Deploy workflow | `.github/workflows/deploy.yml` | | |
 
-### Checklist เมื่อสร้าง Service ใหม่
+### New Service Checklist
 
-- [ ] สร้าง GitHub repo
-- [ ] เพิ่ม `Dockerfile` + `docker-compose.yml` (app + tunnel sidecar)
-- [ ] สร้าง `.env.example` พร้อม comments
-- [ ] สร้าง CF Tunnel บน Dashboard ต่อ env (dev/test/prd) → ได้ token
-- [ ] ตั้ง Public Hostname บน Dashboard (เช่น `svc.dev.example.com → http://app:3000`)
-- [ ] ใส่ `CF_TUNNEL_TOKEN` ใน `.env` แต่ละ env
-- [ ] Encrypt `.env` ด้วย SOPS → `.env.enc`
-- [ ] ตั้งค่า `.github/workflows/deploy.yml`
-- [ ] ตั้งค่า branch protection rules
-- [ ] แจ้งทีมที่เกี่ยวข้อง
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 5.9 | GitHub repo | สร้าง repo ใหม่ | | |
+| 5.10 | Dockerfile + compose | `Dockerfile` + `docker-compose.yml` (app + tunnel) | | |
+| 5.11 | `.env.example` | สร้างพร้อม comments | | |
+| 5.12 | CF Tunnel per env | สร้าง Tunnel บน Dashboard ต่อ env (dev/test/prd) | | |
+| 5.13 | Public Hostname | ตั้งบน Dashboard เช่น `svc.dev.example.com → http://app:3000` | | |
+| 5.14 | `CF_TUNNEL_TOKEN` | ใส่ใน `.env` แต่ละ env | | |
+| 5.15 | Encrypt `.env` | SOPS encrypt → `.env.enc` | | |
+| 5.16 | Deploy workflow | `.github/workflows/deploy.yml` | | |
+| 5.17 | Branch protection | ตั้ง rules ตาม section 3 | | |
+| 5.18 | แจ้งทีม | แจ้งทีมที่เกี่ยวข้อง | | |
 
 ### Modular (Multi-service Ecosystem)
 
-- [ ] Root `docker-compose.yml` ใช้ `include:` ชี้ไปยัง `services/*/compose.yaml`
-- [ ] มี shared network declaration
-- [ ] ทุก service compose ระบุ `networks:` + `volumes:`
-- [ ] Tunnels รวมอยู่ใน `services/tunnels/compose.yaml`
+| # | Feature | คำอธิบาย | Status | Notes |
+|---|---------|----------|--------|-------|
+| 5.19 | Root compose `include:` | ชี้ไปยัง `services/*/compose.yaml` | | |
+| 5.20 | Shared network | มี shared network declaration | | |
+| 5.21 | Service networks + volumes | ทุก service compose ระบุ `networks:` + `volumes:` | | |
+| 5.22 | Tunnels แยกไฟล์ | รวมอยู่ใน `services/tunnels/compose.yaml` | | |
+
+---
+
+## Audit Summary
+
+| Section | หัวข้อ | Total | ✅ | ❌ | ⚠️ | Notes |
+|---------|--------|-------|---|---|---|-------|
+| 1 | Local Dev Architecture | 8 | | | | |
+| 2 | Local to Production Sync | 9 | | | | |
+| 3 | Environment Separation | 14 | | | | |
+| 4 | Secret Management | 21 | | | | |
+| 5 | Overall Structure | 22 | | | | |
+| **รวม** | | **74** | | | | |
 
 ---
 
@@ -177,3 +219,9 @@ docker compose config --quiet && echo "OK" || echo "FAIL"
 # ─── ตรวจ .env.enc มีไหม ───
 [ -f .env.enc ] && echo "OK" || echo "MISSING .env.enc"
 ```
+
+---
+
+> **Audited by:** _______________
+> **Date:** _______________
+> **Project / Service:** _______________
