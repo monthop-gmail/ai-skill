@@ -107,3 +107,29 @@ docker compose up
 - [ ] ตั้งค่า `.github/workflows/deploy.yml`
 - [ ] ตั้งค่า branch protection rules
 - [ ] แจ้งทีมที่เกี่ยวข้อง
+
+## Modular Option สำหรับ Multi-service
+
+โครงสร้างข้างต้นเหมาะกับ **1 service = 1 repo** เมื่อต้องรวมหลาย service ใน repo เดียว
+ใช้ Docker Compose `include` (v2.20+) แยกไฟล์ต่อ service:
+
+```
+ecosystem/
+├── docker-compose.yml              # root: include ทุก service
+├── docker-compose.prd.yml          # resource limits (prd override)
+├── .env.example
+└── services/
+    ├── app-a/
+    │   └── compose.yaml            # service + dependencies
+    ├── app-b/
+    │   └── compose.yaml
+    └── tunnels/
+        └── compose.yaml            # CF tunnels ทั้งหมด
+```
+
+ข้อดี:
+- แก้ไข service แยกไม่ชนกัน — ทีมหลายคนทำงานพร้อมกันได้
+- เพิ่ม/ลบ service แค่เพิ่มไฟล์ + include ไม่ต้องแก้ไฟล์หลัก
+- `docker compose up` ยังใช้ได้เหมือนเดิม
+
+> ดูตัวอย่าง: [pulse-modular](./examples/pulse-modular/) / [nexus-modular](./examples/nexus-modular/)

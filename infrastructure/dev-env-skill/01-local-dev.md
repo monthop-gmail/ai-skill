@@ -88,3 +88,21 @@ docker compose up -d
 - **เหมือน production** — รันบน Docker เหมือนกันทั้ง local และ prd
 - **เข้าถึงง่าย** — ทุก service มี URL จริงผ่าน CF Tunnel
 - **ตั้งค่าผ่าน Dashboard** — ไม่ต้องแก้ config file ใดๆ บน server
+
+## กรณี Multi-service Ecosystem
+
+หลักการข้างต้นเหมาะกับ **1 service = 1 repo** แต่เมื่อต้องรวมหลาย service ไว้ใน repo เดียว
+(เช่น ERP + IoT + SSO + Storage) สามารถใช้ Docker Compose `include` (v2.20+)
+แยกไฟล์ compose ต่อ service ได้:
+
+```yaml
+# docker-compose.yml (root)
+include:
+  - path: ./services/postgres/compose.yaml
+  - path: ./services/app/compose.yaml
+  - path: ./services/tunnels/compose.yaml
+```
+
+ข้อดี: แก้ service แยกไม่กระทบตัวอื่น, ทีมหลายคนแก้พร้อมกันไม่ conflict
+
+> ดูตัวอย่างได้ที่ [pulse-modular](./examples/pulse-modular/) และ [nexus-modular](./examples/nexus-modular/)
