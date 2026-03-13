@@ -1,0 +1,64 @@
+# ─── Cloudflare Tunnels ────────────────────────────
+# แยก tunnel ต่อ service — สร้าง token บน CF Dashboard
+#
+#   auth.dev.example.com         → http://keycloak:8080
+#   erp.dev.example.com          → http://odoo:8069
+#   iot.dev.example.com          → http://thingsboard:9090
+#   mqtt.dev.example.com         → tcp://thingsboard:1883
+#   s3.dev.example.com           → http://minio:9000
+#   s3-console.dev.example.com   → http://minio:9001
+
+services:
+  tunnel-keycloak:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_KEYCLOAK}
+    depends_on:
+      - keycloak
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+  tunnel-odoo:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_ODOO}
+    depends_on:
+      - odoo
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+  tunnel-thingsboard:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_TB}
+    depends_on:
+      - thingsboard
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+  tunnel-mqtt:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_MQTT}
+    depends_on:
+      - thingsboard
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+  tunnel-minio-api:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_MINIO_API}
+    depends_on:
+      - minio
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+  tunnel-minio-console:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_MINIO_CONSOLE}
+    depends_on:
+      - minio
+    networks:
+      - nexus-net
+    restart: unless-stopped

@@ -1,0 +1,31 @@
+# ─── Odoo ERP ───────────────────────────────────────
+# ERP หลัก — บัญชี, สต็อก, ขาย, HR
+# SSO: ติดตั้ง module auth_oidc (OCA)
+
+services:
+  odoo:
+    image: odoo:${ODOO_VERSION:-17}
+    environment:
+      - HOST=postgres
+      - PORT=5432
+      - USER=${ODOO_DB_USER:-odoo}
+      - PASSWORD=${ODOO_DB_PASSWORD:-odoo}
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_addons:/mnt/extra-addons
+      - ./services/odoo/odoo.conf:/etc/odoo/odoo.conf:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+volumes:
+  odoo_data:
+  odoo_addons:

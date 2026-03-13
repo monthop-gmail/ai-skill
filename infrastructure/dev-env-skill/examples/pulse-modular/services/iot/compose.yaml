@@ -1,0 +1,50 @@
+# ─── IoT Gateway (EMQX + Node-RED) ─────────────────
+# EMQX: MQTT Broker รับข้อมูลจาก IoT
+# Node-RED: Flow engine แปลง IoT data → API calls
+
+services:
+  emqx:
+    image: emqx/emqx:5
+    environment:
+      - EMQX_NAME=emqx
+      - EMQX_LOADED_PLUGINS=emqx_dashboard
+    ports:
+      - "1883:1883"     # MQTT
+      - "8083:8083"     # MQTT WebSocket
+    volumes:
+      - emqx_data:/opt/emqx/data
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  nodered:
+    image: nodered/node-red:latest
+    environment:
+      - TZ=${TZ:-Asia/Bangkok}
+    volumes:
+      - nodered_data:/data
+    depends_on:
+      emqx:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+volumes:
+  emqx_data:
+  nodered_data:

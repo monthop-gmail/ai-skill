@@ -1,0 +1,86 @@
+{
+  "realm": "nexus",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "clients": [
+    {
+      "clientId": "odoo",
+      "name": "Odoo ERP",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://erp.example.com/*",
+        "http://localhost:8069/*"
+      ],
+      "webOrigins": [
+        "https://erp.example.com",
+        "http://localhost:8069"
+      ],
+      "defaultClientScopes": ["openid", "email", "profile"]
+    },
+    {
+      "clientId": "thingsboard",
+      "name": "ThingsBoard IoT",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://iot.example.com/*",
+        "http://localhost:9090/*"
+      ],
+      "webOrigins": [
+        "https://iot.example.com",
+        "http://localhost:9090"
+      ],
+      "defaultClientScopes": ["openid", "email", "profile"]
+    },
+    {
+      "clientId": "minio",
+      "name": "MinIO Object Storage",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://s3-console.example.com/*",
+        "http://localhost:9001/*"
+      ],
+      "webOrigins": [
+        "https://s3-console.example.com",
+        "http://localhost:9001"
+      ],
+      "defaultClientScopes": ["openid", "email", "profile"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Nexus administrator"
+      },
+      {
+        "name": "user",
+        "description": "Standard user"
+      }
+    ]
+  },
+  "defaultDefaultClientScopes": ["openid", "email", "profile"],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "th"],
+  "defaultLocale": "en"
+}

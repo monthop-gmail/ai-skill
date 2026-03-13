@@ -1,0 +1,10 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data volumes
+*_data/
+
+# WordPress
+wp-content/uploads/
