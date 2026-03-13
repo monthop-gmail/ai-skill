@@ -9,6 +9,7 @@
 | [3. Environment Separation](./03-env-separation.md) | แยก Dev / Test / PRD สำหรับหลายทีม |
 | [4. Secret Management](./04-secret-management.md) | จัดการ .env อย่างปลอดภัยด้วย SOPS + age |
 | [5. Overall Structure](./05-overall-structure.md) | โครงสร้างทั้งระบบ + Quick Start |
+| [Checklist](./CHECKLIST.md) | รวม checklist จาก 01-05 สำหรับ audit |
 
 ## Examples — ตัวอย่างพร้อมใช้
 
