@@ -1,0 +1,25 @@
+# ─── Samba NAS (LAN only) ──────────────────────────
+# File sharing บน local network
+# ไม่มี tunnel — ใช้งานผ่าน SMB port 445 เท่านั้น
+
+services:
+  samba:
+    image: dperson/samba:latest
+    environment:
+      - TZ=${TZ:-Asia/Bangkok}
+    command: >
+      -u "${SAMBA_USER:-nasuser};${SAMBA_PASSWORD:-naspass}"
+      -s "shared;/shared;yes;no;no;${SAMBA_USER:-nasuser}"
+      -s "backup;/backup;yes;no;no;${SAMBA_USER:-nasuser}"
+    ports:
+      - "445:445"
+    volumes:
+      - nas_shared:/shared
+      - nas_backup:/backup
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+volumes:
+  nas_shared:
+  nas_backup:

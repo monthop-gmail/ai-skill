@@ -1,0 +1,54 @@
+# ─── Cloudflare Tunnels ────────────────────────────
+# แยก tunnel ต่อ service — สร้าง token บน CF Dashboard
+#
+#   erp.dev.example.com          → http://odoo:8069
+#   www.dev.example.com          → http://wordpress:80
+#   nodered.dev.example.com      → http://nodered:1880
+#   mqtt.dev.example.com         → tcp://emqx:1883
+#   n8n.dev.example.com          → http://n8n:5678
+
+services:
+  tunnel-odoo:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_ODOO}
+    depends_on:
+      - odoo
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  tunnel-wordpress:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_WP}
+    depends_on:
+      - wordpress
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  tunnel-nodered:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_NODERED}
+    depends_on:
+      - nodered
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  tunnel-mqtt:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_MQTT}
+    depends_on:
+      - emqx
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  tunnel-n8n:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_N8N}
+    depends_on:
+      - n8n
+    networks:
+      - pulse-net
+    restart: unless-stopped

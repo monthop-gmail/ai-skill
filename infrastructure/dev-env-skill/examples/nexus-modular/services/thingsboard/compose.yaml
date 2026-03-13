@@ -1,0 +1,32 @@
+# ─── ThingsBoard IoT ───────────────────────────────
+# IoT Platform — dashboard, rule engine, MQTT/CoAP
+# SSO: System Admin > OAuth 2.0 clients
+
+services:
+  thingsboard:
+    image: thingsboard/tb-postgres:latest
+    environment:
+      - TB_QUEUE_TYPE=in-memory
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/thingsboard
+      - SPRING_DATASOURCE_USERNAME=${TB_DB_USER:-thingsboard}
+      - SPRING_DATASOURCE_PASSWORD=${TB_DB_PASSWORD:-thingsboard}
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    ports:
+      - "1883:1883"       # MQTT
+      - "5683:5683/udp"   # CoAP
+    volumes:
+      - tb_data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - nexus-net
+    restart: unless-stopped
+
+volumes:
+  tb_data:

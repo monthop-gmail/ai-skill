@@ -1,0 +1,20 @@
+# =============================================================================
+# PULSE Modular — แยก service เป็นไฟล์ย่อย ใช้ Docker Compose include
+# =============================================================================
+# เวอร์ชัน modular ของ examples/pulse
+# ข้อดี: up/down แต่ละ service แยกได้, config ไม่ปนกัน, ดูแลง่ายเมื่อ service เยอะ
+# ข้อเสีย: ต้องใช้ Docker Compose v2.20+
+# =============================================================================
+
+include:
+  - path: ./services/odoo/compose.yaml
+  - path: ./services/wordpress/compose.yaml
+  - path: ./services/iot/compose.yaml
+  - path: ./services/n8n/compose.yaml
+  - path: ./services/redis/compose.yaml
+  - path: ./services/tunnels/compose.yaml
+
+networks:
+  pulse-net:
+    driver: bridge
+    name: pulse-net

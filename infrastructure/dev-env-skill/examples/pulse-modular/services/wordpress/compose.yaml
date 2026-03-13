@@ -1,0 +1,49 @@
+# ─── WordPress ──────────────────────────────────────
+# เว็บไซต์องค์กร / WooCommerce
+
+services:
+  wordpress:
+    image: wordpress:6-php8.3-apache
+    environment:
+      - WORDPRESS_DB_HOST=wp-db
+      - WORDPRESS_DB_NAME=${WP_DB_NAME:-wordpress}
+      - WORDPRESS_DB_USER=${WP_DB_USER:-wordpress}
+      - WORDPRESS_DB_PASSWORD=${WP_DB_PASS:-wordpress}
+      - WORDPRESS_CONFIG_EXTRA=${WP_EXTRA_CONFIG:-}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+    depends_on:
+      wp-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+  wp-db:
+    image: mariadb:11
+    environment:
+      - MARIADB_DATABASE=${WP_DB_NAME:-wordpress}
+      - MARIADB_USER=${WP_DB_USER:-wordpress}
+      - MARIADB_PASSWORD=${WP_DB_PASS:-wordpress}
+      - MARIADB_ROOT_PASSWORD=${WP_DB_ROOT_PASS:-rootpass}
+    volumes:
+      - wp_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+volumes:
+  wp_data:
+  wp_db_data:

@@ -1,0 +1,7 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data volumes
+*_data/

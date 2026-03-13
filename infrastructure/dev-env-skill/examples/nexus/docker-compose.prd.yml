@@ -1,0 +1,45 @@
+# Production override
+# ใช้: docker compose -f docker-compose.yml -f docker-compose.prd.yml up -d
+
+services:
+  postgres:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+
+  keycloak:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  odoo:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+
+  thingsboard:
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 768M
+
+  minio:
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+
+  samba:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 64M

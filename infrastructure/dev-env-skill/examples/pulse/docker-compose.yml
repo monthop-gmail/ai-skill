@@ -1,0 +1,216 @@
+services:
+
+  # ─── Odoo ERP ───────────────────────────────────────
+  odoo:
+    image: odoo:${ODOO_VERSION:-18}
+    environment:
+      - HOST=odoo-db
+      - PORT=5432
+      - USER=${ODOO_DB_USER:-odoo}
+      - PASSWORD=${ODOO_DB_PASS:-odoo}
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_addons:/mnt/extra-addons
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  odoo-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${ODOO_DB_USER:-odoo}
+      - POSTGRES_PASSWORD=${ODOO_DB_PASS:-odoo}
+    volumes:
+      - odoo_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ODOO_DB_USER:-odoo}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  tunnel-odoo:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_ODOO}
+    depends_on:
+      - odoo
+    restart: unless-stopped
+
+  # ─── WordPress ──────────────────────────────────────
+  wordpress:
+    image: wordpress:6-php8.3-apache
+    environment:
+      - WORDPRESS_DB_HOST=wp-db
+      - WORDPRESS_DB_NAME=${WP_DB_NAME:-wordpress}
+      - WORDPRESS_DB_USER=${WP_DB_USER:-wordpress}
+      - WORDPRESS_DB_PASSWORD=${WP_DB_PASS:-wordpress}
+      - WORDPRESS_CONFIG_EXTRA=${WP_EXTRA_CONFIG:-}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+    depends_on:
+      wp-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  wp-db:
+    image: mariadb:11
+    environment:
+      - MARIADB_DATABASE=${WP_DB_NAME:-wordpress}
+      - MARIADB_USER=${WP_DB_USER:-wordpress}
+      - MARIADB_PASSWORD=${WP_DB_PASS:-wordpress}
+      - MARIADB_ROOT_PASSWORD=${WP_DB_ROOT_PASS:-rootpass}
+    volumes:
+      - wp_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  tunnel-wordpress:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_WP}
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+
+  # ─── IoT Gateway (EMQX + Node-RED) ─────────────────
+  emqx:
+    image: emqx/emqx:5
+    environment:
+      - EMQX_NAME=emqx
+      - EMQX_LOADED_PLUGINS=emqx_dashboard
+    ports:
+      - "1883:1883"     # MQTT
+      - "8083:8083"     # MQTT WebSocket
+    volumes:
+      - emqx_data:/opt/emqx/data
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  nodered:
+    image: nodered/node-red:latest
+    environment:
+      - TZ=${TZ:-Asia/Bangkok}
+    volumes:
+      - nodered_data:/data
+    depends_on:
+      emqx:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  tunnel-nodered:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_NODERED}
+    depends_on:
+      - nodered
+    restart: unless-stopped
+
+  tunnel-mqtt:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_MQTT}
+    depends_on:
+      - emqx
+    restart: unless-stopped
+
+  # ─── n8n Workflow Automation ────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=n8n-db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME:-n8n}
+      - DB_POSTGRESDB_USER=${N8N_DB_USER:-n8n}
+      - DB_POSTGRESDB_PASSWORD=${N8N_DB_PASS:-n8n}
+      - N8N_HOST=${N8N_HOST:-n8n.dev.example.com}
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL:-https://n8n.dev.example.com/}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-change-me}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      n8n-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  n8n-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${N8N_DB_NAME:-n8n}
+      - POSTGRES_USER=${N8N_DB_USER:-n8n}
+      - POSTGRES_PASSWORD=${N8N_DB_PASS:-n8n}
+    volumes:
+      - n8n_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${N8N_DB_USER:-n8n}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  tunnel-n8n:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_N8N}
+    depends_on:
+      - n8n
+    restart: unless-stopped
+
+  # ─── Shared: Redis ──────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  odoo_data:
+  odoo_addons:
+  odoo_db_data:
+  wp_data:
+  wp_db_data:
+  emqx_data:
+  nodered_data:
+  n8n_data:
+  n8n_db_data:
+  redis_data:

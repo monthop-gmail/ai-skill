@@ -1,0 +1,20 @@
+# ─── Shared: Redis ──────────────────────────────────
+# Shared cache — WP object cache, n8n queue
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - pulse-net
+    restart: unless-stopped
+
+volumes:
+  redis_data:
