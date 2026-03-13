@@ -23,7 +23,6 @@
 | [pulse-modular](./examples/pulse-modular/) | เหมือน pulse — เวอร์ชัน modular (compose include) |
 | [nexus](./examples/nexus/) | Odoo ERP + ThingsBoard IoT + Keycloak SSO + MinIO S3 + NAS — ระบบรวมศูนย์ 6 tunnels |
 | [nexus-modular](./examples/nexus-modular/) | เหมือน nexus — เวอร์ชัน modular (compose include) |
-| [ecosystem](./examples/ecosystem/) | Odoo + WordPress + IoT (EMQX + Node-RED) + n8n — ต้นแบบ ecosystem (single-file) |
 
 ### Application — service เดี่ยวพร้อมใช้
 
