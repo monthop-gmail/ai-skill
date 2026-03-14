@@ -11,7 +11,7 @@
 แต่ละ plugin ประกอบด้วย:
 - **Skills** — ความรู้เฉพาะด้านที่ Claude ดึงมาใช้โดยอัตโนมัติ
 - **Commands** — คำสั่ง slash ที่เรียกใช้ได้ตรงๆ เช่น `/sales:call-prep`
-- **Connectors** — เชื่อมต่อ Claude กับเครื่องมือภายนอก เช่น Slack, Notion, Jira ผ่าน MCP
+- **Connectors** — เชื่อมต่อ Claude กับเครื่องมือภายนอก เช่น Slack, Notion, Jira ผ่าน MCP ([ดู MCP Setup Checklist](../ai-coding/docs/mcp-setup-checklist.md))
 
 ### Plugin ที่มีให้ใช้งาน
 

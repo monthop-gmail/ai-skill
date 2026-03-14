@@ -207,6 +207,8 @@
 - **ถ้าต้องการ agent ทำงานเอง:** **Antigravity** — multi-agent + browser
 - **ถ้าต้องการ SDK + extensibility:** **Claude Code** — MCP + hooks + subagents
 
+> 📌 ต้องการติดตั้ง MCP servers? ดู [MCP Setup Checklist](./mcp-setup-checklist.md) — รวม Remote + Local MCP servers ที่ใช้บ่อยพร้อม config
+
 ---
 
 *Compare โดยใช้หลัก: หัว = AI Model, ลำตัว/แขน/ขา = Built-in Tools & Features*
