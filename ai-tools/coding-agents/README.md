@@ -299,12 +299,19 @@ groq --system "You are a Python expert"
 - [Groq Code CLI](https://github.com/build-with-groq/groq-code-cli)
 
 ### MCP (Model Context Protocol)
-- [MCP Setup Checklist](../ai-coding/docs/mcp-setup-checklist.md) — Checklist ติดตั้ง MCP servers ที่ใช้บ่อย (Remote + Local) สำหรับ Claude Code, OpenCode
+- [MCP Setup Checklist](./mcp-setup-checklist.md) — Checklist ติดตั้ง MCP servers ที่ใช้บ่อย (Remote + Local) สำหรับ Claude Code, OpenCode
 
 ### บทความอ้างอิง
 - [Best AI Coding Agents for 2026 - Faros AI](https://www.faros.ai/blog/best-ai-coding-agents-2026)
 - [Coding Agents Comparison - Artificial Analysis](https://artificialanalysis.ai/insights/coding-agents-comparison)
 - [Best AI Coding Tools 2026 - Local AI Master](https://localaimaster.com/tools/best-ai-coding-tools)
+
+---
+
+## เอกสารเพิ่มเติม
+
+- [เปรียบเทียบ AI Coding Agents (รูปร่างคน)](./agents-comparison.md)
+- [MCP Setup Checklist](./mcp-setup-checklist.md) - Checklist ติดตั้ง MCP servers ที่ใช้บ่อย (Remote + Local) สำหรับ Claude Code, OpenCode
 
 ---
 
