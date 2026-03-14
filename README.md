@@ -18,6 +18,7 @@
 |---------|-----------|
 | [AI Coding Agents - Free Tier Survey](./ai-tools/coding-agent-skill/README.md) | สำรวจ 15+ Coding Agents พร้อมราคา, Free Tier และคำแนะนำตาม use case |
 | [AI Coding Agents - Comparison](./ai-tools/ai-coding/README.md) | เปรียบเทียบ 6 agents หลัก (Claude Code, OpenCode, Codex, Gemini CLI, Windsurf, Antigravity) |
+| [MCP Setup Checklist](./ai-tools/ai-coding/docs/mcp-setup-checklist.md) | Checklist ติดตั้ง MCP servers ที่ใช้บ่อย (8 Remote + 10 Local) พร้อม CLI commands และ JSON config |
 | [Knowledge Work Plugins & Skills](./ai-tools/cowork-skill/README.md) | Anthropic Knowledge Work Plugins + คู่มือ Skills สำหรับ Claude Code และ OpenCode |
 
 ## Infrastructure - โครงสร้างพื้นฐานและ Hosting
