@@ -7,10 +7,84 @@
 
 ## สารบัญ
 
+- [MCP ตัวไหนจำเป็น? ตัวไหนซ้ำกับ Built-in?](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
 - [วิธีติดตั้ง](#วิธีติดตั้ง)
 - [Remote MCP Servers](#remote-mcp-servers)
 - [Local MCP Servers](#local-mcp-servers)
 - [การจัดการและตรวจสอบ](#การจัดการและตรวจสอบ)
+
+---
+
+## MCP ตัวไหนจำเป็น? ตัวไหนซ้ำกับ Built-in?
+
+> AI Coding Agents อย่าง Claude Code, OpenCode มี built-in tools อยู่แล้ว (อ่านไฟล์, รัน shell, เรียก git/gh)
+> บาง MCP servers จึง **ซ้ำซ้อน** กับสิ่งที่มีอยู่ — ส่วนที่เพิ่มมาคือ MCP ที่ให้ **ความสามารถใหม่** ที่ built-in ทำไม่ได้
+
+### ตารางเปรียบเทียบ: MCP vs Built-in
+
+| MCP Server | Built-in ที่มีอยู่แล้ว | ซ้ำไหม? | ควรลง? |
+|---|---|---|---|
+| **Filesystem** | `Read`, `Write`, `Edit`, `Glob`, `Grep` | ซ้ำเกือบ 100% | ไม่จำเป็น |
+| **Git** | `Bash` → `git log`, `git diff`, `git commit` ฯลฯ | ซ้ำเกือบ 100% | ไม่จำเป็น |
+| **Fetch** | `WebFetch`, `WebSearch` (Claude Code) / `Bash` → `curl` | ซ้ำเกือบ 100% | ไม่จำเป็น |
+| **GitHub** | `Bash` → `gh pr create`, `gh issue list` ฯลฯ | ซ้ำบางส่วน | ลงก็ได้ (OAuth สะดวกกว่า) |
+| **Slack** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Linear** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Sentry** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Figma** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Notion** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Playwright** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Database** | `Bash` → `psql` ได้ แต่ MCP สะดวกกว่ามาก | ซ้ำบางส่วน | **ควรลง** |
+| **Brave Search** | `WebSearch` (Claude Code) | ซ้ำบางส่วน | ลงก็ได้ |
+| **Sequential Thinking** | ไม่มี built-in | ไม่ซ้ำ | **ควรลง** |
+| **Docker** | `Bash` → `docker ps`, `docker build` ฯลฯ | ซ้ำบางส่วน | ไม่จำเป็น |
+| **Memory** | ไม่มี built-in (Claude Code มี auto memory แต่คนละแบบ) | ไม่ซ้ำ | ลงก็ได้ |
+| **Time** | `Bash` → `date` | ซ้ำ | ไม่จำเป็น |
+
+### แล้ว MCP พวก Filesystem, Git, Fetch มีไว้ทำไม?
+
+MCP servers เหล่านี้ถูกสร้างมาเพื่อ **AI tools ที่ไม่มี built-in tools** เช่น:
+
+```
+Claude Code / OpenCode (มี built-in ครบ)
+├── Read, Write, Edit        ← ไม่ต้องการ Filesystem MCP
+├── Bash → git               ← ไม่ต้องการ Git MCP
+├── Bash → gh                ← ไม่ต้องการ GitHub MCP
+└── WebFetch / curl          ← ไม่ต้องการ Fetch MCP
+
+Claude Desktop / ChatGPT / Custom AI Apps (ไม่มี built-in)
+├── ต้องการ Filesystem MCP   ← ถึงจะอ่านไฟล์ได้
+├── ต้องการ Git MCP          ← ถึงจะดู git log ได้
+├── ต้องการ GitHub MCP       ← ถึงจะสร้าง PR ได้
+└── ต้องการ Fetch MCP        ← ถึงจะดึงเว็บได้
+```
+
+### GitHub MCP vs `gh` CLI — มีข้อต่างอะไรบ้าง?
+
+| | `gh` CLI (Built-in) | GitHub MCP |
+|---|---|---|
+| สร้าง PR / ดู Issues | `gh pr create`, `gh issue list` | มี tools สำเร็จรูป |
+| Auth | ต้อง `gh auth login` ก่อน | OAuth ผ่าน `/mcp` — ง่ายกว่า |
+| ความยืดหยุ่น | **ได้ทุก gh command** | จำกัดเฉพาะ tools ที่ MCP เปิดให้ |
+| Cross-repo | ได้ แต่ต้องระบุ `owner/repo` | browse ได้สะดวกกว่า |
+
+> ถ้าตั้ง `gh` CLI ไว้แล้ว → GitHub MCP ไม่จำเป็น แต่ถ้าไม่อยากตั้ง gh CLI ก็ใช้ MCP แทนได้
+
+### สรุป: ควรลง MCP ตัวไหน?
+
+```
+✅ ควรลง (เพิ่มความสามารถใหม่)
+   → Slack, Linear, Sentry, Figma, Notion
+   → Playwright, Sequential Thinking, Database
+
+🤔 ลงก็ได้ (สะดวกขึ้นนิดหน่อย)
+   → GitHub MCP (ถ้าไม่อยากตั้ง gh CLI)
+   → Brave Search (ถ้าอยากค้นหาเว็บแบบเจาะลึก)
+   → Memory (ถ้าอยาก persistent knowledge graph)
+
+❌ ไม่จำเป็นสำหรับ Claude Code / OpenCode (ซ้ำกับ built-in)
+   → Filesystem, Git, Fetch, Docker, Time
+```
 
 ---
 
