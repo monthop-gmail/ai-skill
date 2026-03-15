@@ -11,7 +11,10 @@
 - [วิธีติดตั้ง](#วิธีติดตั้ง)
 - [Remote MCP Servers](#remote-mcp-servers)
 - [Local MCP Servers](#local-mcp-servers)
+- [ตัวอย่าง Config แบบครบชุด](#ตัวอย่าง-config-แบบครบชุด)
 - [การจัดการและตรวจสอบ](#การจัดการและตรวจสอบ)
+- [Troubleshooting](#troubleshooting)
+- [Tips](#tips)
 
 ---
 
@@ -119,6 +122,29 @@ claude mcp add --transport http --scope project <name> <url>
 }
 ```
 
+### OpenCode (`opencode.jsonc`)
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "server-name": {
+      "type": "remote",
+      "url": "https://..."
+    },
+    "local-server": {
+      "type": "local",
+      "command": ["npx", "-y", "package-name"],
+      "environment": {
+        "KEY": "value"
+      }
+    }
+  }
+}
+```
+
+> OpenCode ใช้ `type: "remote"` แทน `"http"` และ `type: "local"` แทน `"stdio"`
+
 ---
 
 ## Remote MCP Servers
@@ -126,6 +152,8 @@ claude mcp add --transport http --scope project <name> <url>
 MCP servers ที่เชื่อมต่อผ่าน URL ไม่ต้องติดตั้งอะไรเพิ่ม
 
 ### 1. GitHub
+
+> เข้าถึง repos, issues, PRs, code search, CI/CD workflows
 
 - [ ] ติดตั้ง GitHub MCP
 
@@ -148,6 +176,8 @@ claude mcp add --transport http github https://api.githubcopilot.com/mcp/
 
 ### 2. Linear (Issue Tracking)
 
+> จัดการ issues, projects, teams, ติดตามความคืบหน้า
+
 - [ ] ติดตั้ง Linear MCP
 
 ```bash
@@ -166,6 +196,8 @@ claude mcp add --transport http linear https://mcp.linear.app/mcp
 ---
 
 ### 3. Slack
+
+> อ่าน/ส่งข้อความ, จัดการ channels, ค้นหาประวัติแชท
 
 - [ ] ติดตั้ง Slack MCP
 
@@ -186,6 +218,8 @@ claude mcp add --transport http slack https://mcp.slack.com/mcp
 
 ### 4. Sentry (Error Monitoring)
 
+> ดู errors, stack traces, crash reports, เชื่อมกับ deployments
+
 - [ ] ติดตั้ง Sentry MCP
 
 ```bash
@@ -204,6 +238,8 @@ claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
 ---
 
 ### 5. Figma (Design)
+
+> เข้าถึง design files, components, design tokens
 
 - [ ] ติดตั้ง Figma MCP
 
@@ -224,6 +260,8 @@ claude mcp add --transport http figma https://mcp.figma.com/mcp
 
 ### 6. Notion
 
+> อ่าน/เขียน pages, query databases, จัดการ properties
+
 - [ ] ติดตั้ง Notion MCP
 
 ```bash
@@ -243,6 +281,8 @@ claude mcp add --transport http notion https://mcp.notion.com/mcp
 
 ### 7. Stripe (Payments)
 
+> ดู payments, customers, invoices, วิเคราะห์ transactions
+
 - [ ] ติดตั้ง Stripe MCP
 
 ```bash
@@ -253,17 +293,18 @@ claude mcp add --transport http stripe https://mcp.stripe.com
 {
   "stripe": {
     "type": "http",
-    "url": "https://mcp.stripe.com",
-    "headers": {
-      "Authorization": "Bearer sk_live_YOUR_API_KEY"
-    }
+    "url": "https://mcp.stripe.com"
   }
 }
 ```
 
+> ใช้ `/mcp` ใน Claude Code เพื่อ authenticate ผ่าน OAuth — ไม่ต้องใส่ API key ใน config
+
 ---
 
 ### 8. Asana (Project Management)
+
+> จัดการ tasks, projects, teams, ติดตามงาน
 
 - [ ] ติดตั้ง Asana MCP
 
@@ -295,6 +336,10 @@ MCP servers ที่รันบนเครื่อง ต้องมี `np
 
 ### 1. Filesystem
 
+> อ่าน/เขียนไฟล์, สร้าง directory, ค้นหาไฟล์
+
+> ⚠️ **ซ้ำกับ built-in** — Claude Code / OpenCode มี tools นี้อยู่แล้ว ดู [เปรียบเทียบ MCP vs Built-in](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
+
 - [ ] ติดตั้ง Filesystem MCP
 
 ```bash
@@ -317,6 +362,8 @@ claude mcp add --transport stdio filesystem -- npx -y @modelcontextprotocol/serv
 
 ### 2. Memory / Knowledge Graph
 
+> จำข้อมูลข้าม conversation, สร้าง knowledge graph
+
 - [ ] ติดตั้ง Memory MCP
 
 ```bash
@@ -336,6 +383,8 @@ claude mcp add --transport stdio memory -- npx -y @modelcontextprotocol/server-m
 ---
 
 ### 3. PostgreSQL / Database
+
+> query databases, ดู schema, จัดการ tables
 
 - [ ] ติดตั้ง Database MCP
 
@@ -360,6 +409,8 @@ claude mcp add --transport stdio db -- npx -y @bytebase/dbhub \
 
 ### 4. Playwright (Browser Automation)
 
+> ควบคุม browser, กรอกฟอร์ม, ถ่ายภาพหน้าจอ, scrape ข้อมูล
+
 - [ ] ติดตั้ง Playwright MCP
 
 ```bash
@@ -379,6 +430,10 @@ claude mcp add --transport stdio playwright -- npx -y @playwright/mcp@latest
 ---
 
 ### 5. Git
+
+> อ่าน git log, diff, branches, commits
+
+> ⚠️ **ซ้ำกับ built-in** — Claude Code / OpenCode มี tools นี้อยู่แล้ว ดู [เปรียบเทียบ MCP vs Built-in](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
 
 - [ ] ติดตั้ง Git MCP
 
@@ -400,6 +455,8 @@ claude mcp add --transport stdio git -- npx -y @modelcontextprotocol/server-git 
 
 ### 6. Sequential Thinking
 
+> คิดแบบมีขั้นตอน, วิเคราะห์ปัญหาซับซ้อน, วางแผน
+
 - [ ] ติดตั้ง Sequential Thinking MCP
 
 ```bash
@@ -419,6 +476,10 @@ claude mcp add --transport stdio sequential-thinking -- npx -y @modelcontextprot
 ---
 
 ### 7. Docker
+
+> จัดการ containers, images, networks, build & deploy
+
+> ⚠️ **ซ้ำกับ built-in** — Claude Code / OpenCode มี tools นี้อยู่แล้ว ดู [เปรียบเทียบ MCP vs Built-in](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
 
 - [ ] ติดตั้ง Docker MCP
 
@@ -440,6 +501,10 @@ claude mcp add --transport stdio docker -- npx -y @modelcontextprotocol/server-d
 
 ### 8. Fetch (HTTP Client)
 
+> ดึงเนื้อหาเว็บ, แปลง HTML เป็น markdown
+
+> ⚠️ **ซ้ำกับ built-in** — Claude Code / OpenCode มี tools นี้อยู่แล้ว ดู [เปรียบเทียบ MCP vs Built-in](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
+
 - [ ] ติดตั้ง Fetch MCP
 
 ```bash
@@ -459,6 +524,8 @@ claude mcp add --transport stdio fetch -- npx -y @modelcontextprotocol/server-fe
 ---
 
 ### 9. Brave Search
+
+> ค้นหาเว็บ, ข่าว, บทความวิชาการ
 
 - [ ] ติดตั้ง Brave Search MCP
 - [ ] ได้ API key จาก Brave Search API แล้ว
@@ -485,6 +552,10 @@ claude mcp add --transport stdio --env BRAVE_API_KEY=YOUR_KEY brave-search \
 
 ### 10. Time / Timezone
 
+> แปลง timezone, ดูเวลาปัจจุบัน
+
+> ⚠️ **ซ้ำกับ built-in** — Claude Code / OpenCode มี tools นี้อยู่แล้ว ดู [เปรียบเทียบ MCP vs Built-in](#mcp-ตัวไหนจำเป็น-ตัวไหนซ้ำกับ-built-in)
+
 - [ ] ติดตั้ง Time MCP
 
 ```bash
@@ -503,9 +574,11 @@ claude mcp add --transport stdio time -- npx -y @modelcontextprotocol/server-tim
 
 ---
 
-## ตัวอย่าง `.mcp.json` แบบครบชุด
+## ตัวอย่าง Config แบบครบชุด
 
-ไฟล์นี้วางที่ root ของ project แล้ว commit เข้า version control ได้เลย
+ตัวอย่างเฉพาะ MCP ที่ **แนะนำ** สำหรับ Claude Code / OpenCode (ไม่รวมตัวที่ซ้ำกับ built-in)
+
+### Claude Code (`.mcp.json`)
 
 ```json
 {
@@ -522,20 +595,53 @@ claude mcp add --transport stdio time -- npx -y @modelcontextprotocol/server-tim
       "type": "http",
       "url": "https://mcp.linear.app/mcp"
     },
-    "filesystem": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"]
     },
-    "fetch": {
+    "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}
+```
+
+### OpenCode (`opencode.jsonc`)
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "slack": {
+      "type": "remote",
+      "url": "https://mcp.slack.com/mcp"
+    },
+    "linear": {
+      "type": "remote",
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "sentry": {
+      "type": "remote",
+      "url": "https://mcp.sentry.dev/mcp"
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest"]
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }
@@ -575,6 +681,73 @@ claude mcp reset-project-choices
 - GitHub Official Servers: https://github.com/modelcontextprotocol/servers
 - MCP Servers Directory: https://mcpservers.com
 - Awesome MCP Servers: https://github.com/wong2/awesome-mcp-servers
+
+---
+
+## Troubleshooting
+
+### MCP server ไม่ connect
+
+```bash
+# ดู status ของทุก server
+claude mcp list
+
+# ดู log ของ server ที่มีปัญหา
+claude mcp get <name>
+```
+
+**สาเหตุที่พบบ่อย:**
+- `npx` ยังไม่ได้ติดตั้ง → ติดตั้ง Node.js ก่อน
+- Package ยังไม่เคย download → รัน `npx -y <package>` ด้วยตัวเองครั้งแรกเพื่อให้ download เสร็จ
+- Port ถูกใช้งาน → ตรวจสอบด้วย `lsof -i :<port>`
+
+### OAuth หมดอายุ (Remote MCP)
+
+```bash
+# Re-authenticate ใน Claude Code
+/mcp
+# เลือก server ที่ต้องการ → Authenticate
+
+# หรือ reset ทั้งหมด
+claude mcp reset-project-choices
+```
+
+### npx ช้ามาก (Local MCP)
+
+**สาเหตุ:** `npx -y` จะ download package ใหม่ทุกครั้ง
+
+**วิธีแก้:** ติดตั้ง package แบบ global แทน
+```bash
+npm install -g @playwright/mcp@latest
+# แล้วเปลี่ยน config จาก npx เป็น command ตรง
+```
+
+```json
+{
+  "playwright": {
+    "type": "stdio",
+    "command": "playwright-mcp"
+  }
+}
+```
+
+### Windows: npx ไม่ทำงาน
+
+ใช้ `cmd /c` ครอบ command:
+
+```bash
+claude mcp add --transport stdio playwright -- cmd /c npx -y @playwright/mcp@latest
+```
+
+```json
+{
+  "playwright": {
+    "type": "stdio",
+    "command": "cmd",
+    "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
+  }
+}
+```
 
 ---
 
