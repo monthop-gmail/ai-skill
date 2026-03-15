@@ -25,7 +25,8 @@ RUN echo "alias v='ls -al'" >> /etc/bash.bashrc
 
 # ─── OCA Thai Accounting + Dependencies ───────────────
 ARG ODOO_VERSION=18.0
-RUN git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/l10n-thailand.git /mnt/extra-addons/l10n-thailand \
+ARG CACHEBUST=1
+RUN git clone --depth 1 -b ${ODOO_VERSION} https://github.com/monthop-gmail/l10n-thailand.git /mnt/extra-addons/l10n-thailand \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/reporting-engine.git /mnt/extra-addons/reporting-engine \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/partner-contact.git /mnt/extra-addons/partner-contact \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/server-ux.git /mnt/extra-addons/server-ux \
