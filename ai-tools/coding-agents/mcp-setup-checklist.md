@@ -14,6 +14,7 @@
 - [ตัวอย่าง Config แบบครบชุด](#ตัวอย่าง-config-แบบครบชุด)
 - [การจัดการและตรวจสอบ](#การจัดการและตรวจสอบ)
 - [Troubleshooting](#troubleshooting)
+- [วิธีใช้งาน MCP ยอดนิยม](#วิธีใช้งาน-mcp-ยอดนิยม)
 - [Tips](#tips)
 
 ---
@@ -748,6 +749,125 @@ claude mcp add --transport stdio playwright -- cmd /c npx -y @playwright/mcp@lat
   }
 }
 ```
+
+---
+
+## วิธีใช้งาน MCP ยอดนิยม
+
+คู่มือการใช้งาน MCP servers ที่ใช้บ่อย พร้อมตัวอย่างประโยคสั่งงานจริง
+
+### Memory (Knowledge Graph)
+
+> จำข้อมูลข้าม conversation — สร้าง entities, relations, observations เหมือนสมองที่จำได้ถาวร
+
+**เหมาะกับ:** ให้ AI จำข้อมูล project, preferences, architecture decisions
+
+**ตัวอย่างสั่งงาน:**
+```
+"จำไว้นะว่า project นี้ใช้ Next.js + Supabase + Cloudflare Tunnel"
+"database ใช้ PostgreSQL port 5433"
+"เราตกลงกันว่าจะใช้ monorepo แบบ Turborepo"
+"ยังจำได้ไหมว่า project นี้ใช้ database อะไร?"
+```
+
+**Tools ที่ทำงานเบื้องหลัง:**
+
+| Tool | หน้าที่ |
+|------|--------|
+| `create_entities` | สร้าง entity เช่น "my-project" ประเภท "project" |
+| `add_observations` | เพิ่มข้อมูลเข้า entity |
+| `create_relations` | เชื่อมความสัมพันธ์ เช่น "project → uses → PostgreSQL" |
+| `search_nodes` | ค้นหาข้อมูลที่เคยจำ |
+| `open_nodes` | เปิดดูรายละเอียด entity |
+| `delete_entities` | ลบ entity ที่ไม่ต้องการ |
+
+---
+
+### Playwright (Browser Automation)
+
+> ควบคุม browser จริงๆ — เปิดเว็บ, คลิก, กรอกฟอร์ม, ถ่ายภาพหน้าจอ
+
+**เหมาะกับ:** ทดสอบ UI, scrape ข้อมูล, ดู preview เว็บ, debug หน้าเว็บ
+
+**ตัวอย่างสั่งงาน:**
+```
+"เปิด localhost:3000 แล้วถ่ายภาพหน้าจอให้ดูหน่อย"
+"ลองกดปุ่ม Login แล้วดูว่าเกิดอะไรขึ้น"
+"กรอกฟอร์ม username=admin, password=1234 แล้ว submit"
+"เปิด https://example.com แล้วดึงข้อมูลตารางมาให้"
+```
+
+**Tools ที่ทำงานเบื้องหลัง:**
+
+| Tool | หน้าที่ |
+|------|--------|
+| `browser_navigate` | เปิด URL |
+| `browser_snapshot` | ดูสถานะหน้าเว็บ (accessibility tree) |
+| `browser_click` | คลิก element |
+| `browser_fill_form` | กรอกฟอร์ม |
+| `browser_type` | พิมพ์ข้อความ |
+| `browser_take_screenshot` | ถ่ายภาพหน้าจอ |
+| `browser_console_messages` | ดู console log/errors |
+| `browser_network_requests` | ดู network requests |
+| `browser_evaluate` | รัน JavaScript ในหน้าเว็บ |
+
+**ตัวอย่าง workflow:**
+```
+"เปิด localhost:3000 ลอง login ด้วย test user แล้วบอกว่าหน้า dashboard แสดงอะไรบ้าง"
+
+→ Playwright จะ:
+  1. browser_navigate → เปิดเว็บ
+  2. browser_fill_form → กรอก username/password
+  3. browser_click → คลิกปุ่ม Login
+  4. browser_snapshot → อ่านเนื้อหา dashboard
+  5. รายงานผลให้
+```
+
+---
+
+### Sequential Thinking (คิดแบบมีขั้นตอน)
+
+> ช่วย AI คิดทีละขั้น — วิเคราะห์ปัญหาซับซ้อน, วางแผน, ตัดสินใจ
+
+**เหมาะกับ:** ปัญหาที่ต้องคิดหลายขั้น, เลือก architecture, debug ซับซ้อน
+
+**ตัวอย่างสั่งงาน:**
+```
+"ช่วยคิดแบบ step-by-step ว่าควร design database schema ยังไงสำหรับ e-commerce"
+"วิเคราะห์ทีละขั้นว่า bug นี้เกิดจากอะไร"
+"เปรียบเทียบ pros/cons ระหว่าง microservices กับ monolith สำหรับ project นี้"
+```
+
+**Tool ที่ทำงานเบื้องหลัง:**
+
+| Tool | หน้าที่ |
+|------|--------|
+| `sequentialthinking` | คิดเป็น thought ที่ 1, 2, 3... สร้างจาก thought ก่อนหน้า สามารถ revise ความคิดเดิมและเพิ่ม thought ใหม่ได้ |
+
+**ต่างจากถามปกติยังไง:**
+```
+ถามปกติ:
+  "ออกแบบ API ให้หน่อย" → ได้คำตอบทีเดียว
+
+Sequential Thinking:
+  "ช่วยคิดทีละขั้นออกแบบ API" → ได้กระบวนการคิด 5-10 steps
+  ที่สามารถย้อนแก้ไขได้ระหว่างทาง เช่น:
+    Thought 1: วิเคราะห์ requirements
+    Thought 2: ออกแบบ endpoints
+    Thought 3: เลือก auth strategy
+    Thought 4: (revise thought 2) ปรับ endpoints ตาม auth ที่เลือก
+    Thought 5: สรุปผล
+```
+
+---
+
+### สรุปเปรียบเทียบ
+
+| MCP | เปรียบเหมือน | ใช้คำว่า | เหมาะกับ |
+|-----|-------------|----------|----------|
+| **Memory** | สมุดจด | "จำไว้...", "ยังจำได้ไหม..." | จำ context ข้าม conversation |
+| **Playwright** | มือที่ใช้ browser | "เปิดเว็บ...", "คลิก...", "ถ่ายภาพหน้าจอ..." | ทดสอบ UI, scrape, debug |
+| **Sequential Thinking** | กระดาษทด | "คิดทีละขั้น...", "วิเคราะห์ step-by-step..." | ปัญหาซับซ้อน, วางแผน |
 
 ---
 
