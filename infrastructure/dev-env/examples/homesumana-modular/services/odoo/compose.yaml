@@ -1,0 +1,28 @@
+# ─── Odoo ERP ───────────────────────────────────────────
+
+services:
+  odoo:
+    image: odoo:${ODOO_VERSION:-18}
+    environment:
+      - HOST=db
+      - PORT=5432
+      - USER=${DB_USER:-odoo}
+      - PASSWORD=${DB_PASS:-odoo}
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_addons:/mnt/extra-addons
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - homesumana-net
+    restart: unless-stopped
+
+volumes:
+  odoo_data:
+  odoo_addons:
