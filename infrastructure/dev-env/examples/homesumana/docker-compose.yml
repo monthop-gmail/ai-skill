@@ -1,6 +1,10 @@
 services:
   odoo:
-    image: odoo:${ODOO_VERSION:-18}
+    build:
+      context: .
+      args:
+        ODOO_VERSION: ${ODOO_VERSION:-18}
+    image: homesumana/odoo:${ODOO_VERSION:-18}
     environment:
       - HOST=db
       - PORT=5432
