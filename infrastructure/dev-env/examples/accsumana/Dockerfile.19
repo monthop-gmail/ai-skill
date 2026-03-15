@@ -1,4 +1,4 @@
-ARG ODOO_VERSION=18.0
+ARG ODOO_VERSION=19.0
 FROM odoo:${ODOO_VERSION}
 ENV TZ=Asia/Bangkok
 
@@ -23,8 +23,9 @@ RUN apt-get update \
 
 RUN echo "alias v='ls -al'" >> /etc/bash.bashrc
 
-# ─── OCA Thai Accounting + Dependencies ───────────────
-ARG ODOO_VERSION=18.0
+# ─── OCA Thai Accounting + Dependencies (v19) ───────────
+# l10n-thailand + odoo-addons: use fork (not yet merged to OCA)
+ARG ODOO_VERSION=19.0
 ARG CACHEBUST=1
 RUN git clone --depth 1 -b ${ODOO_VERSION} https://github.com/monthop-gmail/l10n-thailand.git /mnt/extra-addons/l10n-thailand \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/monthop-gmail/odoo-addons.git /mnt/extra-addons/odoo-addons \

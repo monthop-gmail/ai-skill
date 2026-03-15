@@ -4,9 +4,10 @@ services:
   odoo:
     build:
       context: ../..
+      dockerfile: Dockerfile.${ODOO_MAJOR_VERSION:-19}
       args:
-        ODOO_VERSION: ${ODOO_VERSION:-18.0}
-    image: accsumana/odoo:${ODOO_VERSION:-18}
+        ODOO_VERSION: ${ODOO_VERSION:-19.0}
+    image: accsumana/odoo:${ODOO_VERSION:-19.0}
     environment:
       - HOST=db
       - PORT=5432

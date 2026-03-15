@@ -70,11 +70,12 @@ docker compose exec odoo odoo -d odoo \
 
 ## เปลี่ยน Odoo Version
 
-แก้ `ODOO_VERSION` ใน `.env` แล้ว rebuild:
+แก้ `.env` ทั้ง 2 ค่า แล้ว rebuild:
 
 ```bash
 # แก้ .env
-ODOO_VERSION=19.0
+ODOO_MAJOR_VERSION=18   # เลือก Dockerfile.18 หรือ Dockerfile.19
+ODOO_VERSION=18.0
 
 # ลบ volume เก่า (DB schema ไม่ compatible ข้าม major version)
 docker compose down -v

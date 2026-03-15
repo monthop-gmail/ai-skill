@@ -1,0 +1,35 @@
+ARG ODOO_VERSION=18.0
+FROM odoo:${ODOO_VERSION}
+ENV TZ=Asia/Bangkok
+
+USER root
+
+RUN apt-get update \
+    && locale -a \
+    && apt -y install vim-tiny procps htop iputils-ping \
+    && apt -y install net-tools wget lynx unzip rsync iw
+
+RUN apt-get update \
+    && apt-get -y install git curl gcc libpython3-dev \
+    && apt-get -y install rustc
+
+RUN apt-get update \
+    && apt-get -yq install locales tzdata fonts-tlwg-laksaman \
+    && sed -i 's/# th_/th_/' /etc/locale.gen \
+    && locale-gen \
+    && cp /usr/share/zoneinfo/Asia/Bangkok /etc/localtime \
+    && echo "Asia/Bangkok" > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata
+
+RUN echo "alias v='ls -al'" >> /etc/bash.bashrc
+
+# ─── OCA Thai Accounting + Dependencies (v18) ───────────
+ARG ODOO_VERSION=18.0
+ARG CACHEBUST=1
+RUN git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/l10n-thailand.git /mnt/extra-addons/l10n-thailand \
+    && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/reporting-engine.git /mnt/extra-addons/reporting-engine \
+    && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/partner-contact.git /mnt/extra-addons/partner-contact \
+    && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/server-ux.git /mnt/extra-addons/server-ux \
+    && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/mis-builder.git /mnt/extra-addons/mis-builder
+
+USER odoo
