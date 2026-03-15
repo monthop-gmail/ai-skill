@@ -33,6 +33,8 @@
 | [fullstack](./examples/fullstack/) | PWA + API + PostgreSQL + Redis + 2 CF Tunnels — ตัวอย่าง multi-service |
 | [pwa](./examples/pwa/) | PWA (Vite + Nginx) + CF Tunnel — multi-stage build, SPA routing, HTTPS auto |
 | [odoo](./examples/odoo/) | Odoo ERP + PostgreSQL + CF Tunnel — พร้อม custom addons + backup guide |
+| [homesumana](./examples/homesumana/) | Odoo ERP (homesumana) + PostgreSQL + CF Tunnel — single-file pattern |
+| [homesumana-modular](./examples/homesumana-modular/) | เหมือน homesumana — เวอร์ชัน modular (compose include) + Adminer |
 | [wordpress](./examples/wordpress/) | WordPress + MariaDB + Redis Object Cache + CF Tunnel — พร้อม custom plugins/themes |
 | [keycloak](./examples/keycloak/) | Keycloak SSO/IAM — OIDC, OAuth2, Social Login + เชื่อม Odoo/Nextcloud/n8n |
 
