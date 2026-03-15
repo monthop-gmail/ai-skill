@@ -1,0 +1,24 @@
+# ─── Cloudflare Tunnels ────────────────────────────
+# แยก tunnel ต่อ service — สร้าง token บน CF Dashboard
+#
+#   acc.dev.example.com          → http://odoo:8069
+#   dbadmin.dev.example.com      → http://adminer:8080
+
+services:
+  tunnel-odoo:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_ODOO}
+    depends_on:
+      - odoo
+    networks:
+      - accsumana-net
+    restart: unless-stopped
+
+  tunnel-adminer:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN_ADMINER}
+    depends_on:
+      - adminer
+    networks:
+      - accsumana-net
+    restart: unless-stopped

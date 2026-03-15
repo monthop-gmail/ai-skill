@@ -1,0 +1,8 @@
+# Secrets
+.env
+*.key
+keys.txt
+
+# Data
+db_data/
+odoo_data/

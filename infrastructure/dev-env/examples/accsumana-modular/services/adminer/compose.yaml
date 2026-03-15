@@ -1,0 +1,11 @@
+# ─── Adminer — DB management UI ─────────────────────────
+
+services:
+  adminer:
+    image: adminer
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - accsumana-net
+    restart: unless-stopped

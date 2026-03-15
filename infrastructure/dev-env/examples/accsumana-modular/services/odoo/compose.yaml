@@ -1,0 +1,33 @@
+# ─── Odoo ERP + OCA Thai Accounting ─────────────────────
+
+services:
+  odoo:
+    build:
+      context: ../..
+      args:
+        ODOO_VERSION: ${ODOO_VERSION:-18.0}
+    image: accsumana/odoo:${ODOO_VERSION:-18}
+    environment:
+      - HOST=db
+      - PORT=5432
+      - USER=${DB_USER:-odoo}
+      - PASSWORD=${DB_PASS:-odoo}
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_addons:/mnt/extra-addons
+      - ../../odoo.conf:/etc/odoo/odoo.conf:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - accsumana-net
+    restart: unless-stopped
+
+volumes:
+  odoo_data:
+  odoo_addons:
