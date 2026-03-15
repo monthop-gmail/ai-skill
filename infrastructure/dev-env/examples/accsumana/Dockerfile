@@ -1,4 +1,5 @@
-FROM odoo:${ODOO_VERSION:-18}
+ARG ODOO_VERSION=18.0
+FROM odoo:${ODOO_VERSION}
 ENV TZ=Asia/Bangkok
 
 USER root

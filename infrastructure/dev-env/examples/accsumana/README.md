@@ -33,7 +33,7 @@ accsumana/
 ├── docker-compose.yml      # odoo + db + tunnel
 ├── docker-compose.prd.yml  # production override
 ├── Dockerfile              # custom image + OCA modules
-├── odoo.conf               # addons_path config
+├── odoo.conf               # addons_path + proxy_mode config
 ├── .env.example            # template
 └── .gitignore
 ```
@@ -49,13 +49,17 @@ cp .env.example .env
 # 3. Build + รัน
 docker compose up -d --build
 
-# 4. เข้าใช้งาน
-#    http://localhost:8069
-#    https://acc.dev.example.com
+# 4. ติดตั้ง Thai modules ผ่าน CLI
+docker compose exec odoo odoo -d odoo \
+  --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
+  -i l10n_th_account_tax,l10n_th_account_tax_report,l10n_th_account_wht_cert_form,l10n_th_amount_to_text,l10n_th_base_sequence,l10n_th_base_utils,l10n_th_mis_report,l10n_th_partner,l10n_th_tier_department \
+  --stop-after-init
 
-# 5. ติดตั้ง Thai modules
-#    Settings → Apps → Update Apps List
-#    ค้นหา "l10n_th" → Install
+# 5. (Optional) ติดตั้ง Passkey (Odoo 19+)
+docker compose exec odoo odoo -d odoo \
+  --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
+  -i auth_passkey,auth_passkey_portal \
+  --stop-after-init
 ```
 
 ## CF Dashboard Setup
@@ -63,7 +67,7 @@ docker compose up -d --build
 1. **Zero Trust → Networks → Tunnels** → Create Tunnel
 2. ตั้งชื่อ เช่น `accsumana-dev` → Copy Token
 3. Add Public Hostname:
-   - Subdomain: `acc` / Domain: `dev.example.com`
+   - Subdomain: `odoo` / Domain: `example.com`
    - Service: `http://odoo:8069`
 4. ใส่ Token ใน `.env` → `CF_TUNNEL_TOKEN=eyJhIjoixxxxx`
 
@@ -71,13 +75,43 @@ docker compose up -d --build
 
 ```bash
 # แก้ .env
-ODOO_VERSION=17.0
+ODOO_VERSION=19.0
+
+# ลบ volume เก่า (DB schema ไม่ compatible ข้าม major version)
+docker compose down -v
 
 # Rebuild
 docker compose up -d --build
 ```
 
-> OCA repos จะ clone branch ตาม ODOO_VERSION อัตโนมัติ
+> **สำคัญ:** Dockerfile ต้องมี `ARG ODOO_VERSION` ก่อน `FROM` เพื่อให้ build arg ส่งเข้า base image ได้
+
+## Passkey + HTTPS (CF Tunnel)
+
+เมื่อใช้ CF Tunnel (HTTPS) กับ Passkey ต้องตั้งค่าเพิ่ม ไม่งั้นจะเจอ error:
+
+```
+InvalidRegistrationResponse: Unexpected client data origin "https://...", expected "http://..."
+```
+
+### แก้ไข:
+
+1. `odoo.conf` ต้องมี `proxy_mode = True` (เพื่อให้ Odoo อ่าน X-Forwarded-Proto)
+
+2. ตั้ง `web.base.url` และ freeze ผ่าน DB โดยตรง:
+
+```bash
+docker compose exec db psql -U odoo -d odoo -c "
+  UPDATE ir_config_parameter SET value = 'https://odoo.example.com' WHERE key = 'web.base.url';
+  INSERT INTO ir_config_parameter (key, value, create_uid, write_uid, create_date, write_date)
+    VALUES ('web.base.url.freeze', 'True', 1, 1, now(), now())
+    ON CONFLICT (key) DO UPDATE SET value = 'True';
+"
+docker compose restart odoo
+```
+
+> **หมายเหตุ:** ต้องตั้งผ่าน DB เพราะ Odoo จะ auto-reset `web.base.url` เป็น `http://` ทุกครั้งที่ admin login
+> `web.base.url.freeze = True` ป้องกันการ auto-reset
 
 ## Production
 
