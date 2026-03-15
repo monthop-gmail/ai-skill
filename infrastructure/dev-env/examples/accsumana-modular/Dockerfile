@@ -27,6 +27,7 @@ RUN echo "alias v='ls -al'" >> /etc/bash.bashrc
 ARG ODOO_VERSION=18.0
 ARG CACHEBUST=1
 RUN git clone --depth 1 -b ${ODOO_VERSION} https://github.com/monthop-gmail/l10n-thailand.git /mnt/extra-addons/l10n-thailand \
+    && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/monthop-gmail/accsumana-addons.git /mnt/extra-addons/accsumana-addons \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/reporting-engine.git /mnt/extra-addons/reporting-engine \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/partner-contact.git /mnt/extra-addons/partner-contact \
     && git clone --depth 1 -b ${ODOO_VERSION} https://github.com/OCA/server-ux.git /mnt/extra-addons/server-ux \

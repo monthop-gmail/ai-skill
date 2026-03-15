@@ -16,7 +16,6 @@ services:
       - odoo_data:/var/lib/odoo
       - odoo_addons:/mnt/extra-addons
       - ../../odoo.conf:/etc/odoo/odoo.conf:ro
-      - ../../addons:/mnt/extra-addons/custom
     depends_on:
       db:
         condition: service_healthy
