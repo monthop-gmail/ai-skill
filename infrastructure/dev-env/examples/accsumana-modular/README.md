@@ -22,7 +22,7 @@ accsumana-modular/
 ├── docker-compose.yml              # root: include ทุก service
 ├── docker-compose.prd.yml          # production override
 ├── Dockerfile                      # custom image + OCA modules
-├── odoo.conf                       # addons_path config
+├── odoo.conf                       # addons_path + proxy_mode config
 ├── .env.example                    # template
 ├── .gitignore
 └── services/
@@ -43,23 +43,97 @@ cp .env.example .env
 # 3. Build + รัน
 docker compose up -d --build
 
-# 4. เข้าใช้งาน
-#    https://acc.dev.example.com
-#    https://dbadmin.dev.example.com
+# 4. ติดตั้ง Thai modules ผ่าน CLI
+docker compose exec odoo odoo -d odoo \
+  --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
+  -i l10n_th_account_tax,l10n_th_account_tax_report,l10n_th_account_wht_cert_form,l10n_th_amount_to_text,l10n_th_base_sequence,l10n_th_base_utils,l10n_th_mis_report,l10n_th_partner,l10n_th_tier_department \
+  --stop-after-init
 
-# 5. ติดตั้ง Thai modules
-#    Settings → Apps → Update Apps List
-#    ค้นหา "l10n_th" → Install
+# 5. (Optional) ติดตั้ง Passkey
+docker compose exec odoo odoo -d odoo \
+  --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
+  -i auth_passkey,auth_passkey_portal \
+  --stop-after-init
 ```
 
-## CF Dashboard Setup
+## เปลี่ยน Odoo Version
 
-สร้าง 2 Tunnels:
+แก้ `ODOO_VERSION` ใน `.env` แล้ว rebuild:
+
+```bash
+# แก้ .env
+ODOO_VERSION=19.0
+
+# ลบ volume เก่า (DB schema ไม่ compatible ข้าม major version)
+docker compose down -v
+
+# Build ใหม่
+docker compose up -d --build
+```
+
+> **สำคัญ:** Dockerfile ต้องมี `ARG ODOO_VERSION` ก่อน `FROM` เพื่อให้ build arg ส่งเข้า base image ได้
+
+## CF Tunnel Setup
+
+### วิธีที่ 1: สร้างผ่าน CF Dashboard
+
+สร้าง 2 Tunnels แล้วใส่ token ใน `.env`:
 
 | Tunnel | Public Hostname | Service |
 |--------|----------------|---------|
-| accsumana-odoo | `acc.dev.example.com` | `http://odoo:8069` |
-| accsumana-adminer | `dbadmin.dev.example.com` | `http://adminer:8080` |
+| accsumana-odoo | `odoo.example.com` | `http://odoo:8069` |
+| accsumana-adminer | `dbadmin.example.com` | `http://adminer:8080` |
+
+### วิธีที่ 2: สร้างผ่าน CF API
+
+```bash
+# สร้าง tunnel
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/cfd_tunnel" \
+  -H "Authorization: Bearer ${CF_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"accsumana-odoo","tunnel_secret":"'$(openssl rand -base64 32)'","config_src":"cloudflare"}'
+
+# ตั้ง ingress (ใส่ TUNNEL_ID จาก response)
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/cfd_tunnel/${TUNNEL_ID}/configurations" \
+  -H "Authorization: Bearer ${CF_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"config":{"ingress":[{"hostname":"odoo.example.com","service":"http://odoo:8069"},{"service":"http_status:404"}]}}'
+
+# สร้าง DNS CNAME
+curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
+  -H "Authorization: Bearer ${CF_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"CNAME","name":"odoo","content":"${TUNNEL_ID}.cfargotunnel.com","proxied":true}'
+```
+
+นำ `token` จาก response มาใส่ `CF_TUNNEL_TOKEN_ODOO` ใน `.env`
+
+## Passkey + HTTPS (CF Tunnel)
+
+เมื่อใช้ CF Tunnel (HTTPS) กับ Passkey ต้องตั้งค่าเพิ่ม ไม่งั้นจะเจอ error:
+
+```
+InvalidRegistrationResponse: Unexpected client data origin "https://...", expected "http://..."
+```
+
+### แก้ไข:
+
+1. `odoo.conf` ต้องมี `proxy_mode = True` (เพื่อให้ Odoo อ่าน X-Forwarded-Proto)
+
+2. ตั้ง `web.base.url` และ freeze ผ่าน DB โดยตรง:
+
+```bash
+docker compose exec db psql -U odoo -d odoo -c "
+  UPDATE ir_config_parameter SET value = 'https://odoo.example.com' WHERE key = 'web.base.url';
+  INSERT INTO ir_config_parameter (key, value, create_uid, write_uid, create_date, write_date)
+    VALUES ('web.base.url.freeze', 'True', 1, 1, now(), now())
+    ON CONFLICT (key) DO UPDATE SET value = 'True';
+"
+docker compose restart odoo
+```
+
+> **หมายเหตุ:** ต้องตั้งผ่าน DB เพราะ Odoo จะ auto-reset `web.base.url` เป็น `http://` ทุกครั้งที่ admin login
+> `web.base.url.freeze = True` ป้องกันการ auto-reset
 
 ## Production
 
