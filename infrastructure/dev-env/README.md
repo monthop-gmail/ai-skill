@@ -24,6 +24,11 @@
 | [pulse-modular](./examples/pulse-modular/) | เหมือน pulse — เวอร์ชัน modular (compose include) |
 | [nexus](./examples/nexus/) | Odoo ERP + ThingsBoard IoT + Keycloak SSO + MinIO S3 + NAS — ระบบรวมศูนย์ 6 tunnels |
 | [nexus-modular](./examples/nexus-modular/) | เหมือน nexus — เวอร์ชัน modular (compose include) |
+| [odoo](./examples/odoo/) | Odoo ERP + PostgreSQL + CF Tunnel — พร้อม custom addons + backup guide |
+| [homesumana](./examples/homesumana/) | Odoo ERP (homesumana) + PostgreSQL + CF Tunnel — single-file pattern |
+| [homesumana-modular](./examples/homesumana-modular/) | เหมือน homesumana — เวอร์ชัน modular (compose include) + Adminer |
+| [accsumana](./examples/accsumana/) | Odoo ERP + OCA Thai Accounting (VAT, WHT, 50ทวิ, งบการเงิน) + CF Tunnel |
+| [accsumana-modular](./examples/accsumana-modular/) | เหมือน accsumana — เวอร์ชัน modular (compose include) + Adminer |
 
 ### Application — service เดี่ยวพร้อมใช้
 
@@ -32,11 +37,6 @@
 | [basic](./examples/basic/) | Node.js + PostgreSQL + CF Tunnel — template สำหรับ service ทั่วไป |
 | [fullstack](./examples/fullstack/) | PWA + API + PostgreSQL + Redis + 2 CF Tunnels — ตัวอย่าง multi-service |
 | [pwa](./examples/pwa/) | PWA (Vite + Nginx) + CF Tunnel — multi-stage build, SPA routing, HTTPS auto |
-| [odoo](./examples/odoo/) | Odoo ERP + PostgreSQL + CF Tunnel — พร้อม custom addons + backup guide |
-| [homesumana](./examples/homesumana/) | Odoo ERP (homesumana) + PostgreSQL + CF Tunnel — single-file pattern |
-| [homesumana-modular](./examples/homesumana-modular/) | เหมือน homesumana — เวอร์ชัน modular (compose include) + Adminer |
-| [accsumana](./examples/accsumana/) | Odoo ERP + OCA Thai Accounting (VAT, WHT, 50ทวิ, งบการเงิน) + CF Tunnel |
-| [accsumana-modular](./examples/accsumana-modular/) | เหมือน accsumana — เวอร์ชัน modular (compose include) + Adminer |
 | [wordpress](./examples/wordpress/) | WordPress + MariaDB + Redis Object Cache + CF Tunnel — พร้อม custom plugins/themes |
 | [keycloak](./examples/keycloak/) | Keycloak SSO/IAM — OIDC, OAuth2, Social Login + เชื่อม Odoo/Nextcloud/n8n |
 
