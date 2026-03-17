@@ -51,7 +51,6 @@ accsumana-modular/
 |---|---|---|
 | OCA repos | OCA official | monthop-gmail fork (pending PRs) |
 | odoo-addons | ไม่มี | clone จาก monthop-gmail/odoo-addons |
-| mis_builder | OCA/mis-builder | OCA/mis-builder |
 
 ## Quick Start
 
