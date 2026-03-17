@@ -14,12 +14,25 @@ Odoo ERP + **OCA Thai Accounting** + PostgreSQL + CF Tunnel sidecar
 | `l10n_th_base_utils` | ฟอนต์ไทย + utility แปลงเดือน/ปี |
 | `l10n_th_partner` | ข้อมูลคู่ค้าแบบไทย (บจก., มหาชน, สาขา/สนญ.) |
 | `l10n_th_mis_report` | งบการเงิน (งบดุล, กำไรขาดทุน, งบทดลอง) |
+| `l10n_th_tier_department` | Tier validation ตามแผนก |
+
+## Custom Module: `accsumana`
+
+Meta-module ที่ติดตั้ง Thai Accounting ทุกตัวในคลิกเดียว อยู่ใน repo [monthop-gmail/odoo-addons](https://github.com/monthop-gmail/odoo-addons) (clone อัตโนมัติตอน build)
+
+```bash
+# ติดตั้ง accsumana (จะลง dependency ทั้งหมดให้อัตโนมัติ)
+docker compose exec odoo odoo -d odoo \
+  --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
+  -i accsumana --stop-after-init
+```
 
 ## OCA Dependency Repos (pre-cloned)
 
 ```
 /mnt/extra-addons/
-├── l10n-thailand/      ← OCA/l10n-thailand
+├── odoo-addons/        ← monthop-gmail/odoo-addons (accsumana meta-module)
+├── l10n-thailand/      ← OCA/l10n-thailand (v18) / monthop-gmail fork (v19)
 ├── reporting-engine/   ← OCA/reporting-engine (report_xlsx_helper)
 ├── partner-contact/    ← OCA/partner-contact (partner_company_type, partner_firstname)
 ├── server-ux/          ← OCA/server-ux (date_range, base_tier_validation)
@@ -32,11 +45,19 @@ Odoo ERP + **OCA Thai Accounting** + PostgreSQL + CF Tunnel sidecar
 accsumana/
 ├── docker-compose.yml      # odoo + db + tunnel
 ├── docker-compose.prd.yml  # production override
-├── Dockerfile              # custom image + OCA modules
+├── Dockerfile.18           # Odoo 18 image + OCA modules
+├── Dockerfile.19           # Odoo 19 image + OCA modules (fork)
 ├── odoo.conf               # addons_path + proxy_mode config
 ├── .env.example            # template
 └── .gitignore
 ```
+
+### Odoo 18 vs 19
+
+| | Dockerfile.18 | Dockerfile.19 |
+|---|---|---|
+| OCA repos | OCA official | monthop-gmail fork (pending PRs) |
+| odoo-addons | ไม่มี | clone จาก monthop-gmail/odoo-addons |
 
 ## Quick Start
 
@@ -49,11 +70,10 @@ cp .env.example .env
 # 3. Build + รัน
 docker compose up -d --build
 
-# 4. ติดตั้ง Thai modules ผ่าน CLI
+# 4. ติดตั้ง Thai modules ผ่าน accsumana meta-module
 docker compose exec odoo odoo -d odoo \
   --db_host=db --db_port=5432 --db_user=odoo --db_password=odoo \
-  -i l10n_th_account_tax,l10n_th_account_tax_report,l10n_th_account_wht_cert_form,l10n_th_amount_to_text,l10n_th_base_sequence,l10n_th_base_utils,l10n_th_mis_report,l10n_th_partner,l10n_th_tier_department \
-  --stop-after-init
+  -i accsumana --stop-after-init
 
 # 5. (Optional) ติดตั้ง Passkey (Odoo 19+)
 docker compose exec odoo odoo -d odoo \
@@ -73,14 +93,17 @@ docker compose exec odoo odoo -d odoo \
 
 ## เปลี่ยน Odoo Version
 
+แก้ `.env` ทั้ง 2 ค่า แล้ว rebuild:
+
 ```bash
 # แก้ .env
-ODOO_VERSION=19.0
+ODOO_MAJOR_VERSION=18   # เลือก Dockerfile.18 หรือ Dockerfile.19
+ODOO_VERSION=18.0
 
 # ลบ volume เก่า (DB schema ไม่ compatible ข้าม major version)
 docker compose down -v
 
-# Rebuild
+# Build ใหม่
 docker compose up -d --build
 ```
 
